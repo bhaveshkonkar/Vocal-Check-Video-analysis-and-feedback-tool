@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPT Analysis - VocalCheck</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a, #1e293b);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --accent-purple: #a855f7;
+            --accent-blue: #3b82f6;
+            --accent-pink: #ec4899;
+            --accent-teal: #14b8a6;
+            --accent-orange: #f97316;
+            --accent-green: #22c55e;
+            --glow-purple: rgba(168, 85, 247, 0.5);
+            --glow-blue: rgba(59, 130, 246, 0.5);
+            --glow-pink: rgba(236, 72, 153, 0.5);
+            --glow-teal: rgba(20, 184, 166, 0.5);
+            --glow-orange: rgba(249, 115, 22, 0.5);
+            --glow-green: rgba(34, 197, 94, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            font-family: "Outfit", sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            z-index: -1;
+        }
+
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        .glow-orb-1 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent-purple);
+            top: -100px;
+            left: -150px;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .glow-orb-2 {
+            width: 250px;
+            height: 250px;
+            background: var(--accent-blue);
+            top: 30%;
+            right: -100px;
+            animation: float 10s ease-in-out infinite 1s;
+        }
+
+        .glow-orb-3 {
+            width: 200px;
+            height: 200px;
+            background: var(--accent-pink);
+            bottom: 10%;
+            left: 10%;
+            animation: float 7s ease-in-out infinite 0.5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20px) scale(1.05); }
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            display: inline-block;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.8;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-family: "Outfit", sans-serif;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(255, 255, 255, 0.1);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3);
+        }
+
+        .card h2 {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .card h2::before {
+            content: "";
+            display: block;
+            width: 40px;
+            height: 3px;
+            margin-right: 15px;
+            border-radius: 3px;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+        }
+
+        .upload-area {
+            border: 2px dashed var(--card-border);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .upload-area.drag-over {
+            border-color: var(--accent-purple);
+            background: rgba(168, 85, 247, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .upload-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: var(--text-primary);
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .upload-text {
+            margin-bottom: 20px;
+        }
+
+        .upload-text h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+
+        .upload-text p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            font-family: "Outfit", sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .slide-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .slide-input {
+            width: 80px;
+            text-align: center;
+        }
+
+        .slide-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            font-family: "Outfit", sans-serif;
+            letter-spacing: 0.5px;
+            box-shadow: 0 10px 20px -5px var(--glow-blue);
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px var(--glow-purple);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loader {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+        }
+
+        .loader-circle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 4px solid transparent;
+        }
+
+        .loader-circle-1 {
+            border-top-color: var(--accent-blue);
+            animation: spin 1.5s linear infinite;
+        }
+
+        .loader-circle-2 {
+            border-right-color: var(--accent-purple);
+            animation: spin 2s linear infinite;
+        }
+
+        .loader-circle-3 {
+            border-bottom-color: var(--accent-pink);
+            animation: spin 2.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .loading-subtext {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .error-message {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .result-section {
+            display: none;
+        }
+
+        .tips-container {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 25px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            white-space: pre-wrap;
+        }
+
+        .slide-navigation {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .nav-slide-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: "Outfit", sans-serif;
+        }
+
+        .nav-slide-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .nav-slide-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .current-slide-info {
+            color: var(--text-primary);
+            font-weight: 500;
+            padding: 8px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .success-message {
+            display: none;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .header p {
+                font-size: 1rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+
+            .slide-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .slide-navigation {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📊 PPT Analysis & Script Generator</h1>
+            <p>Upload your PowerPoint presentation to generate speaking scripts with real-time tips for each slide</p>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="/" class="nav-btn">🏠 Home</a>
+            <a href="/index" class="nav-btn">🎥 Video Analysis</a>
+            <a href="/practice" class="nav-btn">🎯 Practice Speaking</a>
+        </div>
+
+        <div class="card">
+            <h2>Upload PowerPoint Presentation</h2>
+            
+            <form id="pptForm" enctype="multipart/form-data">
+                <div class="upload-area" id="dropArea">
+                    <div class="upload-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="upload-text">
+                        <h3>Drag & Drop your PowerPoint file here</h3>
+                        <p>or click to browse your files (.pptx, .pdf, .docx, .txt)</p>
+                    </div>
+                    <input type="file" class="file-input" id="pptFile" accept=".pptx,.pdf,.docx,.txt">
+                </div>
+
+                <div class="form-group">
+                    <label for="speakerName" class="form-label">Speaker Name</label>
+                    <input type="text" id="speakerName" name="speaker_name" class="form-input" placeholder="Enter your name" value="the speaker">
+                </div>
+
+                <div class="form-group">
+                    <label for="slideNumber" class="form-label">Starting Slide Number</label>
+                    <div class="slide-controls">
+                        <input type="number" id="slideNumber" name="slide_number" class="form-input slide-input" min="1" value="1">
+                        <span class="slide-info" id="slideInfo">Select slide to analyze</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="analyze-btn" id="analyzeBtn" disabled>
+                    Generate Speaking Tips
+                </button>
+            </form>
+        </div>
+
+        <div class="loading">
+            <div class="loader">
+                <div class="loader-circle loader-circle-1"></div>
+                <div class="loader-circle loader-circle-2"></div>
+                <div class="loader-circle loader-circle-3"></div>
+            </div>
+            <div class="loading-text">Analyzing your presentation</div>
+            <div class="loading-subtext">Generating speaking tips and scripts...</div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <div class="result-section" id="resultSection">
+            <div class="card">
+                <h2>Speaking Tips & Script</h2>
+                
+                <div class="slide-navigation" id="slideNavigation">
+                    <button class="nav-slide-btn" id="prevSlideBtn" disabled>← Previous</button>
+                    <div class="current-slide-info" id="currentSlideInfo">Slide 1 of 1</div>
+                    <button class="nav-slide-btn" id="nextSlideBtn" disabled>Next →</button>
+                </div>
+
+                <div class="tips-container" id="tipsContainer">
+                    <!-- Speaking tips will be displayed here -->
+                </div>
+
+                <div class="slide-navigation">
+                    <button class="nav-slide-btn" id="generateNewBtn">🔄 Generate for Current Slide</button>
+                    <button class="nav-slide-btn" id="goToSlideBtn">📍 Go to Specific Slide</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFileId = null;
+        let currentSlide = 1;
+        let totalSlides = 1;
+        let speakerName = 'the speaker';
+
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('pptFile');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const pptForm = document.getElementById('pptForm');
+        const speakerNameInput = document.getElementById('speakerName');
+        const slideNumberInput = document.getElementById('slideNumber');
+        const slideInfo = document.getElementById('slideInfo');
+        const loading = document.querySelector('.loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const resultSection = document.getElementById('resultSection');
+        const tipsContainer = document.getElementById('tipsContainer');
+        const currentSlideInfo = document.getElementById('currentSlideInfo');
+        const prevSlideBtn = document.getElementById('prevSlideBtn');
+        const nextSlideBtn = document.getElementById('nextSlideBtn');
+        const generateNewBtn = document.getElementById('generateNewBtn');
+        const goToSlideBtn = document.getElementById('goToSlideBtn');
+
+        // Drag and drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        dropArea.addEventListener('dragenter', () => {
+            dropArea.classList.add('drag-over');
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('drag-over');
+        });
+
+        dropArea.addEventListener('drop', handleDrop);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            dropArea.classList.remove('drag-over');
+
+            if (files.length > 0) {
+                const file = files[0];
+                const validTypes = ['.pptx', '.pdf', '.docx', '.txt'];
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (validTypes.includes(fileExtension)) {
+                    fileInput.files = files;
+                    analyzeBtn.disabled = false;
+                    dropArea.style.borderColor = 'var(--accent-blue)';
+                } else {
+                    showError('Please select a valid file (.pptx, .pdf, .docx, .txt)');
+                }
+            }
+        }
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                analyzeBtn.disabled = false;
+                dropArea.style.borderColor = 'var(--accent-blue)';
+            } else {
+                analyzeBtn.disabled = true;
+            }
+        });
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+            
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function updateSlideNavigation() {
+            currentSlideInfo.textContent = `Slide ${currentSlide} of ${totalSlides}`;
+            prevSlideBtn.disabled = currentSlide <= 1;
+            nextSlideBtn.disabled = currentSlide >= totalSlides;
+        }
+
+        async function loadSlideContent(slideNum) {
+            if (!currentFileId) return;
+
+            try {
+                loading.style.display = 'block';
+                
+                const response = await fetch('/get-slide-tips', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        file_id: currentFileId,
+                        slide_number: slideNum,
+                        speaker_name: speakerName
+                    })
+                });
+
+                const data = await response.json();
+                loading.style.display = 'none';
+
+                if (response.ok) {
+                    tipsContainer.textContent = data.tips;
+                    currentSlide = slideNum;
+                    updateSlideNavigation();
+                } else {
+                    throw new Error(data.error || 'Failed to load slide content');
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                showError(error.message);
+            }
+        }
+
+        // Event listeners for navigation
+        prevSlideBtn.addEventListener('click', () => {
+            if (currentSlide > 1) {
+                loadSlideContent(currentSlide - 1);
+            }
+        });
+
+        nextSlideBtn.addEventListener('click', () => {
+            if (currentSlide < totalSlides) {
+                loadSlideContent(currentSlide + 1);
+            }
+        });
+
+        generateNewBtn.addEventListener('click', () => {
+            loadSlideContent(currentSlide);
+        });
+
+        goToSlideBtn.addEventListener('click', () => {
+            const slideNum = prompt(`Enter slide number (1-${totalSlides}):`);
+            if (slideNum) {
+                const num = parseInt(slideNum);
+                if (num >= 1 && num <= totalSlides) {
+                    loadSlideContent(num);
+                } else {
+                    showError(`Please enter a number between 1 and ${totalSlides}`);
+                }
+            }
+        });
+
+        // Form submission
+        pptForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!fileInput.files.length) {
+                showError('Please select a file first');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('speaker_name', speakerNameInput.value || 'the speaker');
+            formData.append('slide_number', slideNumberInput.value || '1');
+
+            speakerName = speakerNameInput.value || 'the speaker';
+
+            try {
+                loading.style.display = 'block';
+                pptForm.style.display = 'none';
+
+                const response = await fetch('/upload-ppt', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                loading.style.display = 'none';
+
+                if (response.ok) {
+                    currentFileId = data.file_id;
+                    currentSlide = data.slide_number;
+                    totalSlides = data.total_slides;
+                    
+                    tipsContainer.textContent = data.tips;
+                    updateSlideNavigation();
+                    
+                    resultSection.style.display = 'block';
+                    showSuccess('Speaking tips generated successfully!');
+                    
+                    // Scroll to results
+                    resultSection.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    throw new Error(data.error || 'Analysis failed');
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                pptForm.style.display = 'block';
+                showError(error.message || 'An error occurred while analyzing the presentation');
+            }
+        });
+
+        // Update slide info when slide number changes
+        slideNumberInput.addEventListener('input', () => {
+            const slideNum = slideNumberInput.value;
+            if (slideNum) {
+                slideInfo.textContent = `Will analyze slide ${slideNum}`;
+            } else {
+                slideInfo.textContent = 'Select slide to analyze';
+            }
+        });
+
+        // Cleanup when leaving the page
+        window.addEventListener('beforeunload', () => {
+            if (currentFileId) {
+                fetch('/cleanup-ppt', {
+                    method: 'POST',
+                    body: JSON.stringify({ file_id: currentFileId }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

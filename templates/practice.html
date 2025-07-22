@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Presentation Skills Master</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-gradient: linear-gradient(135deg, #0f172a, #1e293b);
+        --card-bg: rgba(255, 255, 255, 0.03);
+        --card-border: rgba(255, 255, 255, 0.1);
+        --text-primary: #f8fafc;
+        --text-secondary: #cbd5e1;
+        --accent-purple: #a855f7;
+        --accent-blue: #3b82f6;
+        --accent-pink: #ec4899;
+        --accent-teal: #14b8a6;
+        --accent-orange: #f97316;
+        --accent-green: #22c55e;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--bg-gradient);
+        color: var(--text-primary);
+        font-family: "Outfit", sans-serif;
+        min-height: 100vh;
+        padding: 40px 20px;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .header h1 {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .header p {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+      }
+
+      .dashboard {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 30px;
+      }
+
+      @media (max-width: 768px) {
+        .dashboard {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 30px;
+        margin-bottom: 30px;
+      }
+
+      .card h2 {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        color: var(--text-primary);
+      }
+
+      .progress-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .skill-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        opacity: 0;
+        animation: fadeInUp 0.6s ease-out forwards;
+      }
+
+      .skill-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .skill-card.active {
+        border: 2px solid var(--accent-blue);
+      }
+
+      .skill-icon {
+        width: 40px;
+        height: 40px;
+        margin: 0 auto 10px;
+        opacity: 0.8;
+      }
+
+      .skill-name {
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+      }
+
+      .skill-level {
+        font-size: 0.8rem;
+        color: var(--accent-blue);
+        font-weight: 600;
+      }
+
+      .task-section {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        opacity: 0;
+        animation: scaleIn 0.6s ease-out forwards;
+      }
+
+      .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .task-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.3rem;
+      }
+
+      .task-level {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--accent-blue);
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      .task-description {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+
+      .upload-area {
+        border: 2px dashed var(--card-border);
+        border-radius: 12px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .upload-area:hover {
+        border-color: var(--accent-blue);
+        background: rgba(59, 130, 246, 0.05);
+      }
+
+      .upload-area.drag-over {
+        border-color: var(--accent-purple);
+        background: rgba(168, 85, 247, 0.1);
+      }
+
+      .upload-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 20px;
+      }
+
+      .upload-text h3 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+      }
+
+      .upload-text p {
+        color: var(--text-secondary);
+      }
+
+      .file-input {
+        display: none;
+      }
+
+      .analyze-btn {
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 20px;
+      }
+
+      .analyze-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+      }
+
+      .analyze-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .result-section {
+        display: none;
+      }
+
+      .score-display {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .score-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        margin: 0 auto 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(
+          135deg,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        color: white;
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+        opacity: 0;
+        animation: scaleIn 0.6s ease-out forwards;
+      }
+
+      .feedback-section {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        opacity: 0;
+        animation: slideInRight 0.6s ease-out forwards;
+      }
+
+      .feedback-section h3 {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+        color: var(--text-primary);
+      }
+
+      .feedback-text {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 15px;
+      }
+
+      .audio-player {
+        width: 100%;
+        margin-top: 15px;
+      }
+
+      .strengths-list,
+      .improvements-list {
+        list-style: none;
+      }
+
+      .strengths-list li,
+      .improvements-list li {
+        padding: 10px 0;
+        border-bottom: 1px solid var(--card-border);
+        color: var(--text-secondary);
+        display: flex;
+        align-items: flex-start;
+        opacity: 0;
+        animation: fadeInUp 0.4s ease-out forwards;
+      }
+
+      .strengths-list li:last-child,
+      .improvements-list li:last-child {
+        border-bottom: none;
+      }
+
+      .list-icon {
+        margin-right: 10px;
+        color: var(--accent-green);
+        flex-shrink: 0;
+      }
+
+      .improvements-list .list-icon {
+        color: var(--accent-orange);
+      }
+
+      .progress-section {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 20px;
+      }
+
+      .progress-bar {
+        height: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        margin: 15px 0;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        border-radius: 4px;
+        width: 0;
+        transition: width 1.5s ease-out;
+      }
+
+      .progress-labels {
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      .next-task-btn {
+        background: linear-gradient(
+          to right,
+          var(--accent-green),
+          var(--accent-teal)
+        );
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 20px;
+        display: none;
+      }
+
+      .next-task-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 40px 0;
+      }
+
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--card-border);
+        border-top-color: var(--accent-blue);
+        border-radius: 50%;
+        margin: 0 auto 20px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .error-message {
+        display: none;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      .user-profile {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--card-border);
+      }
+
+      .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        margin-right: 15px;
+      }
+
+      .user-info h3 {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+      }
+
+      .user-info p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: 5px;
+      }
+
+      .badge-beginner {
+        background: rgba(34, 197, 94, 0.2);
+        color: var(--accent-green);
+      }
+
+      .badge-intermediate {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--accent-blue);
+      }
+
+      .badge-advanced {
+        background: rgba(168, 85, 247, 0.2);
+        color: var(--accent-purple);
+      }
+
+      .badge-master {
+        background: rgba(236, 72, 153, 0.2);
+        color: var(--accent-pink);
+      }
+
+      /* Add animation styles */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes scaleIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @keyframes slideInRight {
+        from {
+          opacity: 0;
+          transform: translateX(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .animate-fade-in-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+      }
+
+      .animate-scale-in {
+        animation: scaleIn 0.6s ease-out forwards;
+      }
+
+      .animate-slide-in-right {
+        animation: slideInRight 0.6s ease-out forwards;
+      }
+
+      .animate-pulse {
+        animation: pulse 2s infinite;
+      }
+
+      .skill-card {
+        opacity: 0;
+        animation: fadeInUp 0.6s ease-out forwards;
+      }
+
+      .task-section {
+        opacity: 0;
+        animation: scaleIn 0.6s ease-out forwards;
+      }
+
+      .feedback-section {
+        opacity: 0;
+        animation: slideInRight 0.6s ease-out forwards;
+      }
+
+      .score-circle {
+        opacity: 0;
+        animation: scaleIn 0.6s ease-out forwards;
+      }
+
+      .progress-fill {
+        width: 0;
+        transition: width 1.5s ease-out;
+      }
+
+      .strengths-list li,
+      .improvements-list li {
+        opacity: 0;
+        animation: fadeInUp 0.4s ease-out forwards;
+      }
+
+      /* Add animation delays for list items */
+      .strengths-list li:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .strengths-list li:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .strengths-list li:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .improvements-list li:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .improvements-list li:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .improvements-list li:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Presentation Skills Master</h1>
+        <p>Track your progress and master the art of public speaking</p>
+      </div>
+
+      <div class="dashboard">
+        <div class="sidebar">
+          <div class="card">
+            <div class="user-profile">
+              <div class="user-avatar">U</div>
+              <div class="user-info">
+                <h3>User</h3>
+                <p>Total Score: <span id="total-score">0</span></p>
+              </div>
+            </div>
+
+            <h2>Skills Progress</h2>
+            <div class="progress-overview" id="skills-overview">
+              <!-- Skill cards will be generated here -->
+            </div>
+          </div>
+        </div>
+
+        <div class="main-content">
+          <div class="card">
+            <div class="task-section">
+              <div class="task-header">
+                <h3 class="task-title" id="task-title">
+                  Select a skill to begin
+                </h3>
+                <span class="task-level" id="task-level">Level 1</span>
+              </div>
+              <p class="task-description" id="task-description">
+                Click on a skill from the sidebar to get started with your
+                practice task.
+              </p>
+            </div>
+
+            <div id="task-container" style="display: none">
+              <div class="upload-area" id="dropArea">
+                <div class="upload-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                </div>
+                <div class="upload-text">
+                  <h3>Upload Your Practice Video</h3>
+                  <p>Drag & drop your video here or click to browse</p>
+                </div>
+                <input
+                  type="file"
+                  class="file-input"
+                  id="videoFile"
+                  accept="video/*"
+                />
+              </div>
+
+              <button class="analyze-btn" id="analyzeBtn" disabled>
+                Analyze Practice
+              </button>
+            </div>
+
+            <div class="loading">
+              <div class="loading-spinner"></div>
+              <p>Analyzing your practice video...</p>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <div class="result-section" id="resultSection">
+              <div class="score-display">
+                <div class="score-circle" id="scoreCircle">0</div>
+                <h3>Your Score</h3>
+              </div>
+
+              <div class="feedback-section">
+                <h3>AI Feedback</h3>
+                <p class="feedback-text" id="feedback-text"></p>
+                <audio
+                  controls
+                  class="audio-player"
+                  id="feedback-audio"
+                ></audio>
+              </div>
+
+              <div class="feedback-section">
+                <h3>Strengths</h3>
+                <ul class="strengths-list" id="strengths-list"></ul>
+              </div>
+
+              <div class="feedback-section">
+                <h3>Areas for Improvement</h3>
+                <ul class="improvements-list" id="improvements-list"></ul>
+              </div>
+
+              <div class="progress-section">
+                <h3>Progress to Next Level</h3>
+                <div class="progress-bar">
+                  <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-labels">
+                  <span id="current-level">Current Level</span>
+                  <span id="next-level">Next Level</span>
+                </div>
+              </div>
+
+              <button class="next-task-btn" id="nextTaskBtn">
+                Proceed to Next Level
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Define the skills and their levels
+      const skills = [
+        {
+          id: "filler_words",
+          name: "Filler Words",
+          icon: "🗣️",
+          level: "beginner",
+          progress: 0,
+        },
+        {
+          id: "tone_modulation",
+          name: "Tone Modulation",
+          icon: "🎵",
+          level: "beginner",
+          progress: 0,
+        },
+        {
+          id: "posture",
+          name: "Posture",
+          icon: "🧍",
+          level: "beginner",
+          progress: 0,
+        },
+        {
+          id: "eye_contact",
+          name: "Eye Contact",
+          icon: "👁️",
+          level: "beginner",
+          progress: 0,
+        },
+        {
+          id: "gestures",
+          name: "Gestures",
+          icon: "👐",
+          level: "beginner",
+          progress: 0,
+        },
+        {
+          id: "pace",
+          name: "Pace",
+          icon: "⏱️",
+          level: "beginner",
+          progress: 0,
+        },
+        {
+          id: "clarity",
+          name: "Clarity",
+          icon: "🔊",
+          level: "beginner",
+          progress: 0,
+        },
+      ];
+
+      // Task prompts for each skill and level
+      const taskPrompts = {
+        filler_words: {
+          beginner:
+            "Record a 30-second introduction about yourself. Focus on eliminating filler words like 'um', 'like', and 'you know'.",
+          intermediate:
+            "Deliver a 1-minute impromptu speech about your favorite movie. Challenge yourself to use minimal filler words while maintaining a natural flow.",
+          advanced:
+            "Prepare a 2-minute formal presentation about a current event. Aim for zero filler words while maintaining professional composure.",
+        },
+        tone_modulation: {
+          beginner:
+            "Read a short paragraph aloud with appropriate emotion. Practice varying your tone to match the content.",
+          intermediate:
+            "Deliver a 1-minute speech about something you're passionate about, consciously varying your tone to emphasize key points.",
+          advanced:
+            "Record a 2-minute persuasive speech, using tone modulation to convey different emotions and maintain audience engagement.",
+        },
+        posture: {
+          beginner:
+            "Record yourself standing with proper posture for 30 seconds while introducing yourself. Focus on keeping your back straight and shoulders relaxed.",
+          intermediate:
+            "Deliver a 1-minute speech while maintaining confident posture. Pay attention to your body alignment throughout.",
+          advanced:
+            "Present a 2-minute speech while maintaining professional posture, incorporating natural movement and gestures.",
+        },
+        eye_contact: {
+          beginner:
+            "Record a 30-second introduction while making eye contact with the camera. Try not to look away or down at notes.",
+          intermediate:
+            "Deliver a 1-minute speech while maintaining consistent eye contact with the camera, practicing the 3-second rule.",
+          advanced:
+            "Present a 2-minute speech while effectively managing eye contact, simulating looking at different audience members.",
+        },
+        gestures: {
+          beginner:
+            "Record a 30-second speech while incorporating 2-3 basic hand gestures to emphasize key points.",
+          intermediate:
+            "Deliver a 1-minute speech using purposeful gestures that complement your message.",
+          advanced:
+            "Present a 2-minute speech with natural, varied gestures that enhance your message and demonstrate confidence.",
+        },
+        pace: {
+          beginner:
+            "Record yourself reading a short paragraph at a steady, comfortable pace. Aim for about 120-150 words per minute.",
+          intermediate:
+            "Deliver a 1-minute speech while consciously varying your pace to emphasize important points.",
+          advanced:
+            "Present a 2-minute speech with dynamic pacing, using speed variations strategically for impact.",
+        },
+        clarity: {
+          beginner:
+            "Record a 30-second speech about your favorite food, focusing on clear pronunciation and enunciation.",
+          intermediate:
+            "Deliver a 1-minute speech about a complex topic, ensuring your words are clear and easily understood.",
+          advanced:
+            "Present a 2-minute speech with specialized terminology while maintaining clarity and audience understanding.",
+        },
+      };
+
+      // Level thresholds
+      const levelThresholds = {
+        beginner: 70,
+        intermediate: 80,
+        advanced: 90,
+      };
+
+      // DOM elements
+      const skillsOverview = document.getElementById("skills-overview");
+      const taskTitle = document.getElementById("task-title");
+      const taskLevel = document.getElementById("task-level");
+      const taskDescription = document.getElementById("task-description");
+      const taskContainer = document.getElementById("task-container");
+      const dropArea = document.getElementById("dropArea");
+      const fileInput = document.getElementById("videoFile");
+      const analyzeBtn = document.getElementById("analyzeBtn");
+      const resultSection = document.getElementById("resultSection");
+      const scoreCircle = document.getElementById("scoreCircle");
+      const feedbackText = document.getElementById("feedback-text");
+      const feedbackAudio = document.getElementById("feedback-audio");
+      const strengthsList = document.getElementById("strengths-list");
+      const improvementsList = document.getElementById("improvements-list");
+      const progressFill = document.getElementById("progress-fill");
+      const currentLevel = document.getElementById("current-level");
+      const nextLevel = document.getElementById("next-level");
+      const nextTaskBtn = document.getElementById("nextTaskBtn");
+      const errorMessage = document.getElementById("errorMessage");
+      const totalScoreElement = document.getElementById("total-score");
+
+      // Current selected skill
+      let currentSkill = null;
+      let userScores = {};
+
+      // Initialize skills overview
+      function initializeSkills() {
+        // Load user data from localStorage if available
+        loadUserData();
+
+        // Render skills
+        skillsOverview.innerHTML = "";
+        skills.forEach((skill) => {
+          const skillCard = document.createElement("div");
+          skillCard.className = "skill-card";
+          skillCard.dataset.skillId = skill.id;
+
+          skillCard.innerHTML = `
+                    <div class="skill-icon">${skill.icon}</div>
+                    <div class="skill-name">${skill.name}</div>
+                    <div class="skill-level">
+                        <span class="badge badge-${
+                          skill.level
+                        }">${capitalizeFirstLetter(skill.level)}</span>
+                    </div>
+                `;
+
+          skillCard.addEventListener("click", () => selectSkill(skill.id));
+          skillsOverview.appendChild(skillCard);
+        });
+
+        // Update total score
+        updateTotalScore();
+      }
+
+      // Load user data from localStorage
+      function loadUserData() {
+        const savedData = localStorage.getItem("presentationSkillsData");
+        if (savedData) {
+          const data = JSON.parse(savedData);
+          userScores = data.scores || {};
+
+          // Update skills with saved levels
+          skills.forEach((skill) => {
+            if (data.skills && data.skills[skill.id]) {
+              skill.level = data.skills[skill.id].level || "beginner";
+              skill.progress = data.skills[skill.id].progress || 0;
+            }
+          });
+        }
+      }
+
+      // Save user data to localStorage
+      function saveUserData() {
+        const skillsData = {};
+        skills.forEach((skill) => {
+          skillsData[skill.id] = {
+            level: skill.level,
+            progress: skill.progress,
+          };
+        });
+
+        const data = {
+          skills: skillsData,
+          scores: userScores,
+        };
+
+        localStorage.setItem("presentationSkillsData", JSON.stringify(data));
+      }
+
+      // Update total score
+      function updateTotalScore() {
+        let total = 0;
+        Object.values(userScores).forEach((score) => {
+          total += score;
+        });
+        totalScoreElement.textContent = total;
+      }
+
+      // Select a skill
+      function selectSkill(skillId) {
+        // Remove active class from all skill cards
+        document.querySelectorAll(".skill-card").forEach((card) => {
+          card.classList.remove("active");
+        });
+
+        // Add active class to selected skill card
+        const selectedCard = document.querySelector(
+          `.skill-card[data-skill-id="${skillId}"]`
+        );
+        selectedCard.classList.add("active");
+        selectedCard.classList.add("animate-pulse");
+
+        // Find the skill
+        currentSkill = skills.find((skill) => skill.id === skillId);
+
+        // Update task information with animation
+        taskTitle.textContent = `${currentSkill.name} Practice`;
+        taskLevel.textContent = capitalizeFirstLetter(currentSkill.level);
+        taskDescription.textContent = taskPrompts[skillId][currentSkill.level];
+
+        // Show task container with animation
+        taskContainer.style.display = "block";
+        taskContainer.classList.add("animate-scale-in");
+
+        // Hide results
+        resultSection.style.display = "none";
+
+        // Reset file input
+        fileInput.value = "";
+        analyzeBtn.disabled = true;
+
+        // Remove pulse animation after 1 second
+        setTimeout(() => {
+          selectedCard.classList.remove("animate-pulse");
+        }, 1000);
+      }
+
+      // Capitalize first letter
+      function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+      }
+
+      // Drag and drop functionality
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      dropArea.addEventListener("dragenter", () => {
+        dropArea.classList.add("drag-over");
+      });
+
+      dropArea.addEventListener("dragleave", () => {
+        dropArea.classList.remove("drag-over");
+      });
+
+      dropArea.addEventListener("drop", handleDrop);
+
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        dropArea.classList.remove("drag-over");
+
+        if (files.length > 0 && files[0].type.startsWith("video/")) {
+          fileInput.files = files;
+          analyzeBtn.disabled = false;
+        } else {
+          showError("Please select a valid video file");
+        }
+      }
+
+      // Click to select file
+      dropArea.addEventListener("click", () => {
+        fileInput.click();
+      });
+
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files.length > 0) {
+          analyzeBtn.disabled = false;
+        } else {
+          analyzeBtn.disabled = true;
+        }
+      });
+
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = "block";
+        setTimeout(() => {
+          errorMessage.style.display = "none";
+        }, 5000);
+      }
+
+      // Analyze button click handler
+      analyzeBtn.addEventListener("click", async () => {
+        if (!fileInput.files[0]) {
+          showError("Please select a video file");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("video", fileInput.files[0]);
+        formData.append("skill", currentSkill.id);
+        formData.append("level", currentSkill.level);
+
+        // Show loading, hide results and error
+        document.querySelector(".loading").style.display = "block";
+        resultSection.style.display = "none";
+        errorMessage.style.display = "none";
+
+        try {
+          const response = await fetch("/analyze-skill", {
+            method: "POST",
+            body: formData,
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            // Update score with animation
+            const score = data.analysis.score;
+            scoreCircle.textContent = score;
+            scoreCircle.classList.add("animate-scale-in");
+
+            // Save score
+            userScores[`${currentSkill.id}_${currentSkill.level}`] = score;
+
+            // Update feedback
+            feedbackText.textContent = data.analysis.feedback;
+
+            // Set feedback audio if available
+            if (data.feedback_audio) {
+              feedbackAudio.src = data.feedback_audio;
+              feedbackAudio.style.display = "block";
+            } else {
+              feedbackAudio.style.display = "none";
+            }
+
+            // Update strengths
+            strengthsList.innerHTML = data.analysis.strengths
+              .map(
+                (strength) =>
+                  `<li><span class="list-icon">✓</span>${strength}</li>`
+              )
+              .join("");
+
+            // Update improvements
+            improvementsList.innerHTML = data.analysis.improvements
+              .map(
+                (improvement) =>
+                  `<li><span class="list-icon">!</span>${improvement}</li>`
+              )
+              .join("");
+
+            // Update progress with animation
+            const progressPercentage =
+              data.analysis.progress.progress_percentage;
+            progressFill.style.width = `${progressPercentage}%`;
+            currentLevel.textContent = data.analysis.progress.current_level;
+            nextLevel.textContent = data.analysis.progress.next_level;
+
+            // Check if user can proceed to next level
+            const threshold = levelThresholds[currentSkill.level];
+            if (score >= threshold) {
+              nextTaskBtn.style.display = "block";
+            } else {
+              nextTaskBtn.style.display = "none";
+            }
+
+            // Update skill progress
+            const skillIndex = skills.findIndex(
+              (s) => s.id === currentSkill.id
+            );
+            skills[skillIndex].progress = progressPercentage;
+
+            // Save user data
+            saveUserData();
+            updateTotalScore();
+
+            // Show results with animations
+            resultSection.style.display = "block";
+            animateElements();
+          } else {
+            showError(data.error || "Error analyzing video");
+          }
+        } catch (error) {
+          showError("Error analyzing video");
+          console.error(error);
+        } finally {
+          document.querySelector(".loading").style.display = "none";
+        }
+      });
+
+      // Next task button click handler
+      nextTaskBtn.addEventListener("click", () => {
+        // Determine next level
+        let nextLevel;
+        if (currentSkill.level === "beginner") {
+          nextLevel = "intermediate";
+        } else if (currentSkill.level === "intermediate") {
+          nextLevel = "advanced";
+        } else {
+          nextLevel = "master";
+        }
+
+        // Update skill level
+        const skillIndex = skills.findIndex((s) => s.id === currentSkill.id);
+        skills[skillIndex].level = nextLevel;
+        skills[skillIndex].progress = 0;
+
+        // Save user data
+        saveUserData();
+
+        // Reinitialize skills
+        initializeSkills();
+
+        // Select the same skill again to update the task
+        selectSkill(currentSkill.id);
+
+        // Show success message with animation
+        const successElement = document.createElement("div");
+        successElement.style.background = "rgba(34, 197, 94, 0.1)";
+        successElement.style.border = "1px solid rgba(34, 197, 94, 0.3)";
+        successElement.style.color = "#22c55e";
+        successElement.style.padding = "15px";
+        successElement.style.borderRadius = "8px";
+        successElement.style.marginBottom = "20px";
+        successElement.style.textAlign = "center";
+        successElement.textContent = `Congratulations! You've advanced to ${capitalizeFirstLetter(
+          nextLevel
+        )} level in ${currentSkill.name}!`;
+        successElement.classList.add("animate-fade-in-up");
+
+        // Insert before the task section
+        const taskSection = document.querySelector(".task-section");
+        taskSection.parentNode.insertBefore(successElement, taskSection);
+
+        // Remove after 5 seconds
+        setTimeout(() => {
+          successElement.remove();
+        }, 5000);
+      });
+
+      // Add animation functions
+      function animateElements() {
+        // Animate skill cards with delay
+        document.querySelectorAll(".skill-card").forEach((card, index) => {
+          card.style.animationDelay = `${index * 0.1}s`;
+        });
+
+        // Animate feedback sections with delay
+        document
+          .querySelectorAll(".feedback-section")
+          .forEach((section, index) => {
+            section.style.animationDelay = `${index * 0.2}s`;
+          });
+
+        // Animate list items
+        document
+          .querySelectorAll(".strengths-list li, .improvements-list li")
+          .forEach((item, index) => {
+            item.style.animationDelay = `${index * 0.1}s`;
+          });
+      }
+
+      // Initialize animations on page load
+      document.addEventListener("DOMContentLoaded", () => {
+        initializeSkills();
+        animateElements();
+      });
+    </script>
+  </body>
+</html>

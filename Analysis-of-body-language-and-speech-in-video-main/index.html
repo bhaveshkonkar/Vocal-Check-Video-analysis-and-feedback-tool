@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNR Status Checker</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        input, button { padding: 10px; margin: 10px; }
+        #result, #otp-section { display: none; }
+    </style>
+</head>
+<body>
+    <h2>PNR Status Checker</h2>
+    <div>
+        <input type="text" id="pnr" placeholder="Enter PNR Number">
+        <input type="text" id="phone" placeholder="Enter Phone Number">
+        <button onclick="checkPNR()">Check PNR</button>
+    </div>
+    <div id="result"></div>
+    <div id="otp-section">
+        <input type="text" id="otp" placeholder="Enter OTP">
+        <button onclick="verifyOTP()">Verify OTP</button>
+    </div>
+
+    <script>
+        let globalPhone = "";
+
+        function checkPNR() {
+            let pnr = document.getElementById("pnr").value;
+            let phone = document.getElementById("phone").value;
+            globalPhone = phone; // Store phone number for later verification
+
+            fetch("http://127.0.0.1:5000/check-pnr", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ pnr, phone })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById("result").innerHTML = `<p style="color: red">${data.error}</p>`;
+                } else {
+                    document.getElementById("result").innerHTML = `<p>Train: ${data.pnr_status.train}</p>
+                                                                  <p>Status: ${data.pnr_status.status}</p>
+                                                                  <p>Seat: ${data.pnr_status.seat}</p>`;
+                    document.getElementById("otp-section").style.display = "block";
+                }
+            });
+        }
+
+        function verifyOTP() {
+            let userOtp = document.getElementById("otp").value;
+
+            fetch("http://127.0.0.1:5000/verify-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ phone: globalPhone, otp: userOtp })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert("Invalid OTP. Try again.");
+                } else {
+                    alert("PNR verification successful!");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vocal Check - Real-Time Voice Feedback System</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-gradient: linear-gradient(135deg, #0f172a, #1e293b);
+        --card-bg: rgba(255, 255, 255, 0.03);
+        --card-border: rgba(255, 255, 255, 0.1);
+        --text-primary: #f8fafc;
+        --text-secondary: #cbd5e1;
+        --accent-purple: #a855f7;
+        --accent-blue: #3b82f6;
+        --accent-pink: #ec4899;
+        --accent-teal: #14b8a6;
+        --glow-purple: rgba(168, 85, 247, 0.5);
+        --glow-blue: rgba(59, 130, 246, 0.5);
+        --glow-pink: rgba(236, 72, 153, 0.5);
+        --glow-teal: rgba(20, 184, 166, 0.5);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--bg-gradient);
+        color: var(--text-primary);
+        font-family: "Outfit", sans-serif;
+        overflow-x: hidden;
+        line-height: 1.6;
+      }
+
+      .noise-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      .glow-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        z-index: -1;
+        opacity: 0.4;
+      }
+
+      .glow-orb-1 {
+        width: 500px;
+        height: 500px;
+        background: var(--accent-purple);
+        top: -200px;
+        left: -200px;
+        animation: float 15s ease-in-out infinite;
+      }
+
+      .glow-orb-2 {
+        width: 400px;
+        height: 400px;
+        background: var(--accent-blue);
+        top: 40%;
+        right: -150px;
+        animation: float 18s ease-in-out infinite 2s;
+      }
+
+      .glow-orb-3 {
+        width: 350px;
+        height: 350px;
+        background: var(--accent-pink);
+        bottom: -100px;
+        left: 30%;
+        animation: float 12s ease-in-out infinite 1s;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0) scale(1);
+        }
+        50% {
+          transform: translateY(-30px) scale(1.05);
+        }
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        position: relative;
+      }
+
+      /* Navigation */
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 30px 0;
+        position: relative;
+        z-index: 100;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        font-size: 1.8rem;
+        color: var(--text-primary);
+        text-decoration: none;
+      }
+
+      .logo-icon {
+        width: 40px;
+        height: 40px;
+        margin-right: 12px;
+        background: linear-gradient(
+          135deg,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 30px;
+      }
+
+      .nav-link {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        position: relative;
+      }
+
+      .nav-link::after {
+        content: "";
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        transition: width 0.3s ease;
+      }
+
+      .nav-link:hover {
+        color: var(--text-primary);
+      }
+
+      .nav-link:hover::after {
+        width: 100%;
+      }
+
+      .cta-button {
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        font-family: "Outfit", sans-serif;
+        text-decoration: none;
+        display: inline-block;
+        box-shadow: 0 10px 20px -5px var(--glow-blue);
+      }
+
+      .cta-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 25px -5px var(--glow-purple);
+      }
+
+      .cta-button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: all 0.6s;
+      }
+
+      .cta-button:hover::before {
+        left: 100%;
+      }
+
+      .mobile-menu-btn {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        cursor: pointer;
+      }
+
+      /* Hero Section */
+      .hero {
+        padding: 80px 0;
+        display: flex;
+        align-items: center;
+        position: relative;
+        min-height: calc(100vh - 100px);
+      }
+
+      .hero-content {
+        width: 50%;
+        position: relative;
+        z-index: 2;
+        margin-bottom:70px;
+      }
+
+      .hero-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 4rem;
+        font-weight: 700;
+        line-height: 1.1;
+        margin-bottom: 24px;
+        background: linear-gradient(
+          to right,
+          var(--text-primary),
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 1s forwards 0.3s;
+      }
+
+      .hero-subtitle {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        margin-bottom: 40px;
+        max-width: 500px;
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 1s forwards 0.6s;
+      }
+
+      .hero-cta {
+        display: flex;
+        gap: 20px;
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 1s forwards 0.9s;
+      }
+
+      .secondary-cta {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--card-border);
+        color: var(--text-primary);
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .secondary-cta:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-3px);
+      }
+
+      .hero-image {
+        width: 50%;
+        position: relative;
+        z-index: 1;
+      }
+
+      .dashboard-mockup {
+        width: 100%;
+        border-radius: 20px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        transform: perspective(1000px) rotateY(-10deg) rotateX(5deg);
+        opacity: 0;
+        animation: fadeIn 1s forwards 1.2s, float 6s ease-in-out infinite 2s;
+        position: relative;
+      }
+
+      .dashboard-mockup::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          rgba(168, 85, 247, 0.2),
+          rgba(59, 130, 246, 0.2)
+        );
+        border-radius: 20px;
+        z-index: -1;
+      }
+
+      .floating-elements {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .floating-element {
+        position: absolute;
+        border-radius: 10px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        padding: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        opacity: 0;
+        animation: fadeIn 0.5s forwards, float 6s ease-in-out infinite;
+      }
+
+      .floating-element-1 {
+        top: 20%;
+        left: -80px;
+        width: 180px;
+        animation-delay: 1.5s, 2s;
+      }
+
+      .floating-element-2 {
+        bottom: 25%;
+        right: -60px;
+        width: 160px;
+        animation-delay: 1.8s, 3s;
+      }
+
+      .floating-element-3 {
+        top: -40px;
+        right: 20%;
+        width: 140px;
+        animation-delay: 2.1s, 4s;
+      }
+
+      .floating-element-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--text-primary);
+      }
+
+      .floating-element-value {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+
+      .floating-element-1 .floating-element-value {
+        color: var(--accent-purple);
+      }
+
+      .floating-element-2 .floating-element-value {
+        color: var(--accent-blue);
+      }
+
+      .floating-element-3 .floating-element-value {
+        color: var(--accent-pink);
+      }
+
+      .floating-element-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+      }
+
+      /* Features Section */
+      .features {
+        padding: 120px 0;
+        position: relative;
+      }
+
+      .section-header {
+        text-align: center;
+        margin-bottom: 80px;
+      }
+
+      .section-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        background: linear-gradient(
+          to right,
+          var(--text-primary),
+          var(--accent-blue)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        display: inline-block;
+      }
+
+      .section-subtitle {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+      }
+
+      .feature-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 30px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .feature-card:hover {
+        transform: translateY(-10px);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      }
+
+      .feature-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.5s ease;
+      }
+
+      .feature-card:hover::before {
+        transform: scaleX(1);
+      }
+
+      .feature-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+
+      .feature-card:nth-child(1) .feature-icon {
+        background: rgba(168, 85, 247, 0.1);
+        color: var(--accent-purple);
+      }
+
+      .feature-card:nth-child(2) .feature-icon {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--accent-blue);
+      }
+
+      .feature-card:nth-child(3) .feature-icon {
+        background: rgba(236, 72, 153, 0.1);
+        color: var(--accent-pink);
+      }
+
+      .feature-card:nth-child(4) .feature-icon {
+        background: rgba(20, 184, 166, 0.1);
+        color: var(--accent-teal);
+      }
+
+      .feature-card:nth-child(5) .feature-icon {
+        background: rgba(168, 85, 247, 0.1);
+        color: var(--accent-purple);
+      }
+
+      .feature-card:nth-child(6) .feature-icon {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--accent-blue);
+      }
+
+      .feature-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+      }
+
+      .feature-description {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        line-height: 1.6;
+      }
+
+      /* How It Works Section */
+      .how-it-works {
+        padding: 120px 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .steps-container {
+        position: relative;
+        padding: 60px 0;
+      }
+
+      .steps-line {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(
+          to bottom,
+          var(--accent-blue),
+          var(--accent-purple),
+          var(--accent-pink)
+        );
+        transform: translateX(-50%);
+        z-index: 1;
+      }
+
+      .step {
+        display: flex;
+        align-items: center;
+        margin-bottom: 100px;
+        position: relative;
+        z-index: 2;
+        opacity: 0;
+      }
+
+      .step:last-child {
+        margin-bottom: 0;
+      }
+
+      .step-left {
+        justify-content: flex-end;
+      }
+
+      .step-right {
+        flex-direction: row-reverse;
+      }
+
+      .step-content {
+        width: 45%;
+        padding: 30px;
+      }
+
+      .step-number {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 3;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .step-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+      }
+
+      .step-description {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+
+      .step-image {
+        width: 45%;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      }
+
+      .step-image img {
+        width: 100%;
+        height: auto;
+        display: block;
+        transition: transform 0.5s ease;
+      }
+
+      .step:hover .step-image img {
+        transform: scale(1.05);
+      }
+
+      /* Testimonials Section */
+      .testimonials {
+        padding: 120px 0;
+        position: relative;
+      }
+
+      .testimonials-container {
+        position: relative;
+        margin-top: 60px;
+      }
+
+      .testimonial-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 0 auto;
+        max-width: 800px;
+        position: relative;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .testimonial-card::before {
+        content: '"';
+        position: absolute;
+        top: -30px;
+        left: 30px;
+        font-size: 120px;
+        font-family: "Space Grotesk", sans-serif;
+        color: rgba(255, 255, 255, 0.05);
+        line-height: 1;
+      }
+
+      .testimonial-content {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        line-height: 1.7;
+        margin-bottom: 30px;
+      }
+
+      .testimonial-author {
+        display: flex;
+        align-items: center;
+      }
+
+      .author-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 20px;
+      }
+
+      .author-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .author-info {
+        flex: 1;
+      }
+
+      .author-name {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+      }
+
+      .author-title {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      .testimonial-nav {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 40px;
+      }
+
+      .testimonial-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .testimonial-dot.active {
+        background: var(--accent-purple);
+        transform: scale(1.2);
+      }
+
+      /* CTA Section */
+      .cta-section {
+        padding: 120px 0;
+        text-align: center;
+        position: relative;
+      }
+
+      .cta-container {
+        background: linear-gradient(
+          135deg,
+          rgba(59, 130, 246, 0.1),
+          rgba(168, 85, 247, 0.1)
+        );
+        border: 1px solid var(--card-border);
+        border-radius: 30px;
+        padding: 80px 40px;
+        max-width: 900px;
+        margin: 0 auto;
+        position: relative;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .cta-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='rgba(255,255,255,0.05)' fill-rule='evenodd'/%3E%3C/svg%3E");
+        z-index: -1;
+      }
+
+      .cta-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        background: linear-gradient(
+          to right,
+          var(--text-primary),
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .cta-subtitle {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto 40px;
+      }
+
+      .cta-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+      }
+
+      /* Footer */
+      .footer {
+        padding: 80px 0 40px;
+        position: relative;
+      }
+
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 60px;
+      }
+
+      .footer-logo {
+        margin-bottom: 20px;
+      }
+
+      .footer-description {
+        color: var(--text-secondary);
+        max-width: 300px;
+        margin-bottom: 30px;
+      }
+
+      .social-links {
+        display: flex;
+        gap: 15px;
+      }
+
+      .social-link {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-secondary);
+        transition: all 0.3s ease;
+      }
+
+      .social-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-3px);
+        color: var(--text-primary);
+      }
+
+      .footer-links {
+        display: flex;
+        gap: 80px;
+      }
+
+      .footer-column h3 {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: var(--text-primary);
+      }
+
+      .footer-column ul {
+        list-style: none;
+      }
+
+      .footer-column li {
+        margin-bottom: 12px;
+      }
+
+      .footer-column a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+
+      .footer-column a:hover {
+        color: var(--text-primary);
+        padding-left: 5px;
+      }
+
+      .footer-bottom {
+        padding-top: 30px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .copyright {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      .footer-nav {
+        display: flex;
+        gap: 30px;
+      }
+
+      .footer-nav a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+      }
+
+      .footer-nav a:hover {
+        color: var(--text-primary);
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes scaleIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      /* Responsive Styles */
+      @media (max-width: 1024px) {
+        .hero {
+          flex-direction: column;
+          text-align: center;
+          padding: 60px 0;
+        }
+
+        .hero-content,
+        .hero-image {
+          width: 100%;
+        }
+
+        .hero-content {
+          margin-bottom: 60px;
+        }
+
+        .hero-subtitle {
+          margin: 0 auto 40px;
+        }
+
+        .hero-cta {
+          justify-content: center;
+        }
+
+        .floating-element {
+          display: none;
+        }
+
+        .features-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .step {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .step-left,
+        .step-right {
+          justify-content: center;
+        }
+
+        .step-content,
+        .step-image {
+          width: 80%;
+          margin: 0 auto;
+        }
+
+        .step-image {
+          order: -1;
+          margin-bottom: 30px;
+        }
+
+        .footer-content {
+          flex-direction: column;
+          gap: 40px;
+        }
+
+        .footer-links {
+          gap: 40px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .navbar {
+          padding: 20px 0;
+        }
+
+        .nav-links {
+          display: none;
+        }
+
+        .mobile-menu-btn {
+          display: block;
+        }
+
+        .hero-title {
+          font-size: 3rem;
+        }
+
+        .features-grid {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+
+        .step-content,
+        .step-image {
+          width: 100%;
+        }
+
+        .cta-title {
+          font-size: 2.5rem;
+        }
+
+        .cta-buttons {
+          flex-direction: column;
+          align-items: center;
+          gap: 15px;
+        }
+
+        .footer-links {
+          flex-direction: column;
+          gap: 30px;
+        }
+
+        .footer-bottom {
+          flex-direction: column;
+          gap: 20px;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="noise-bg"></div>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
+
+    <div class="container">
+      <nav class="navbar">
+        <a href="#" class="logo">
+          <div class="logo-icon">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 2v20M2 12h20"></path>
+            </svg>
+          </div>
+          VocalCheck
+        </a>
+        <div class="nav-links">
+          <a href="#features" class="nav-link">Features</a>
+          <a href="#how-it-works" class="nav-link">How It Works</a>
+          <a href="#testimonials" class="nav-link">Testimonials</a>
+          <a href="#pricing" class="nav-link">Pricing</a>
+        </div>
+        <a href="{{ url_for('index') }}" class="cta-button">Try It Now</a>
+        <button class="mobile-menu-btn">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </nav>
+    </div>
+
+    <section class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <h1 class="hero-title">Elevate Your Communication Skills</h1>
+          <p class="hero-subtitle">
+            Get real-time feedback on your speech, content, and body language
+            with our AI-powered video analysis tool.
+          </p>
+          <div class="hero-cta">
+            <a href="{{ url_for('index') }}" class="cta-button">Try It Free</a>
+            <a href="#how-it-works" class="secondary-cta">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <polygon points="10 8 16 12 10 16 10 8"></polygon>
+              </svg>
+              See How It Works
+            </a>
+          </div>
+        </div>
+        <div class="hero-image">
+          <img
+           src="{{ url_for('static', filename='image/friends-family-making-videocall-catching-up.jpg') }}" alt="VocalCheck Dashboard" class="dashboard-mockup">
+          
+          <div class="floating-elements">
+            <div class="floating-element floating-element-1">
+              <div class="floating-element-title">Transcription</div>
+              <div class="floating-element-value">98%</div>
+              <div class="floating-element-label">Accuracy</div>
+            </div>
+            <div class="floating-element floating-element-2">
+              <div class="floating-element-title">Body Language</div>
+              <div class="floating-element-value">87%</div>
+              <div class="floating-element-label">Confidence</div>
+            </div>
+            <div class="floating-element floating-element-3">
+              <div class="floating-element-title">Content</div>
+              <div class="floating-element-value">92%</div>
+              <div class="floating-element-label">Engagement</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Powerful Features</h2>
+          <p class="section-subtitle">
+            Our comprehensive analysis tool provides detailed insights to help
+            you improve your communication skills.
+          </p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                ></path>
+              </svg>
+            </div>
+            <h3 class="feature-title">Speech Transcription</h3>
+            <p class="feature-description">
+              Get accurate transcriptions of your speech with confidence scores
+              to identify areas for improvement.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+              </svg>
+            </div>
+            <h3 class="feature-title">Body Language Analysis</h3>
+            <p class="feature-description">
+              Analyze facial expressions, eye contact, posture, and gestures to
+              enhance your non-verbal communication.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                ></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </div>
+            <h3 class="feature-title">Content Analysis</h3>
+            <p class="feature-description">
+              Evaluate the clarity, structure, and engagement level of your
+              content to make your message more effective.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+            </div>
+            <h3 class="feature-title">Performance Metrics</h3>
+            <p class="feature-description">
+              Track your progress over time with detailed metrics and
+              visualizations of your improvement.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 20h9"></path>
+                <path
+                  d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
+                ></path>
+              </svg>
+            </div>
+            <h3 class="feature-title">Personalized Feedback</h3>
+            <p class="feature-description">
+              Receive tailored suggestions and actionable tips to improve your
+              specific communication style.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+            </div>
+            <h3 class="feature-title">Multi-Platform Support</h3>
+            <p class="feature-description">
+              Upload videos from any device or platform and get consistent,
+              reliable analysis results.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="how-it-works" id="how-it-works">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">How It Works</h2>
+          <p class="section-subtitle">
+            Our simple three-step process makes it easy to get valuable feedback
+            on your communication skills.
+          </p>
+        </div>
+        <div class="steps-container">
+          <div class="steps-line"></div>
+
+          <div class="step step-left">
+            <div class="step-content">
+              <h3 class="step-title">Upload Your Video</h3>
+              <p class="step-description">
+                Simply upload a video of your presentation, speech, or
+                conversation. We support all common video formats.
+              </p>
+              <a href="#" class="secondary-cta">Learn More</a>
+            </div>
+            <div class="step-number">1</div>
+            <div class="step-image">
+              <img
+                src="../uploads/WhatsApp_Video_2025-04-26_at_7.40.42_PM.mp4"
+                alt="Upload Video"
+              />
+            </div>
+          </div>
+
+          <div class="step step-right">
+            <div class="step-content">
+              <h3 class="step-title">AI-Powered Analysis</h3>
+              <p class="step-description">
+                Our advanced AI analyzes your speech, content, and body language
+                to provide comprehensive feedback.
+              </p>
+              <a href="#" class="secondary-cta">Learn More</a>
+            </div>
+            <div class="step-number">2</div>
+            <div class="step-image">
+              <img
+                src="{{url_for('static', filename='image/top-viewtop-view-manager-employee-doing-teamwork-business-office-looking-charts-laptop-display.jpg')}}"
+                alt="AI Analysis"
+              />
+            </div>
+          </div>
+
+          <div class="step step-left">
+            <div class="step-content">
+              <h3 class="step-title">Get Detailed Results</h3>
+              <p class="step-description">
+                Review your detailed analysis with confidence scores,
+                visualizations, and actionable improvement tips.
+              </p>
+              <a href="#" class="secondary-cta">Learn More</a>
+            </div>
+            <div class="step-number">3</div>
+            <div class="step-image">
+              <img
+                src="{{url_for('static', filename='image/excited-woman-feel-ecstatic-reading-great-online-news-laptop-working-overtime-start-up-company-office-happy-employee-using-modern-technology-network-wireless-studying-writing-searching.jpg')}}"
+                alt="Results Dashboard"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="testimonials" id="testimonials">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">What Our Users Say</h2>
+          <p class="section-subtitle">
+            Thousands of professionals and students use VocalCheck to improve
+            their communication skills.
+          </p>
+        </div>
+        <div class="testimonials-container">
+          <div class="testimonial-card">
+            <p class="testimonial-content">
+              VocalCheck has been a game-changer for my public speaking skills.
+              The detailed feedback on my body language helped me identify
+              habits I wasn't even aware of. After just a few weeks of practice,
+              I've seen a significant improvement in my presentation confidence.
+            </p>
+            <div class="testimonial-author">
+              <div class="author-avatar">
+                <img
+                  src="/placeholder.svg?height=60&width=60"
+                  alt="Sarah Johnson"
+                />
+              </div>
+              <div class="author-info">
+                <h4 class="author-name">Sarah Johnson</h4>
+                <p class="author-title">Marketing Director</p>
+              </div>
+            </div>
+          </div>
+          <div class="testimonial-nav">
+            <div class="testimonial-dot active"></div>
+            <div class="testimonial-dot"></div>
+            <div class="testimonial-dot"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <div class="container">
+        <div class="cta-container">
+          <h2 class="cta-title">Ready to Improve Your Communication?</h2>
+          <p class="cta-subtitle">
+            Join thousands of professionals who have transformed their
+            communication skills with VocalCheck.
+          </p>
+          <div class="cta-buttons">
+            <a href="app.html" class="cta-button">Try It Free</a>
+            <a href="#" class="secondary-cta">Learn More</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-info">
+            <a href="#" class="logo footer-logo">
+              <div class="logo-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 2v20M2 12h20"></path>
+                </svg>
+              </div>
+              VocalCheck
+            </a>
+            <p class="footer-description">
+              Elevate your communication skills with our AI-powered video
+              analysis tool.
+            </p>
+            <div class="social-links">
+              <a href="#" class="social-link">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"
+                  ></path>
+                </svg>
+              </a>
+              <a href="#" class="social-link">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"
+                  ></path>
+                </svg>
+              </a>
+              <a href="#" class="social-link">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                  <path
+                    d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"
+                  ></path>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                </svg>
+              </a>
+              <a href="#" class="social-link">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"
+                  ></path>
+                  <rect x="2" y="9" width="4" height="12"></rect>
+                  <circle cx="4" cy="4" r="2"></circle>
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div class="footer-links">
+            <div class="footer-column">
+              <h3>Product</h3>
+              <ul>
+                <li><a href="#">Features</a></li>
+                <li><a href="#">Pricing</a></li>
+                <li><a href="#">Case Studies</a></li>
+                <li><a href="#">Reviews</a></li>
+                <li><a href="#">Updates</a></li>
+              </ul>
+            </div>
+            <div class="footer-column">
+              <h3>Company</h3>
+              <ul>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Team</a></li>
+                <li><a href="#">Careers</a></li>
+                <li><a href="#">Press</a></li>
+                <li><a href="#">Contact</a></li>
+              </ul>
+            </div>
+            <div class="footer-column">
+              <h3>Resources</h3>
+              <ul>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">Guides</a></li>
+                <li><a href="#">Events</a></li>
+                <li><a href="#">Help Center</a></li>
+                <li><a href="#">API</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p class="copyright">© 2023 VocalCheck. All rights reserved.</p>
+          <div class="footer-nav">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Cookies</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Intersection Observer for animations
+      document.addEventListener("DOMContentLoaded", function () {
+        // Animate feature cards
+        const featureCards = document.querySelectorAll(".feature-card");
+        const featureObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry, index) => {
+              if (entry.isIntersecting) {
+                setTimeout(() => {
+                  entry.target.style.animation = `fadeInUp 0.8s forwards`;
+                }, index * 100);
+              }
+            });
+          },
+          { threshold: 0.1 }
+        );
+
+        featureCards.forEach((card) => {
+          featureObserver.observe(card);
+        });
+
+        // Animate steps
+        const steps = document.querySelectorAll(".step");
+        const stepObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.style.animation = `fadeInUp 0.8s forwards`;
+              }
+            });
+          },
+          { threshold: 0.1 }
+        );
+
+        steps.forEach((step) => {
+          stepObserver.observe(step);
+        });
+
+        // Animate testimonial
+        const testimonial = document.querySelector(".testimonial-card");
+        const testimonialObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.style.animation = `fadeInUp 0.8s forwards`;
+              }
+            });
+          },
+          { threshold: 0.1 }
+        );
+
+        testimonialObserver.observe(testimonial);
+
+        // Animate CTA
+        const cta = document.querySelector(".cta-container");
+        const ctaObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.style.animation = `fadeInUp 0.8s forwards`;
+              }
+            });
+          },
+          { threshold: 0.1 }
+        );
+
+        ctaObserver.observe(cta);
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.querySelector(".mobile-menu-btn");
+        const navLinks = document.querySelector(".nav-links");
+
+        mobileMenuBtn.addEventListener("click", () => {
+          navLinks.style.display =
+            navLinks.style.display === "flex" ? "none" : "flex";
+        });
+
+        // Testimonial slider
+        const dots = document.querySelectorAll(".testimonial-dot");
+        dots.forEach((dot, index) => {
+          dot.addEventListener("click", () => {
+            dots.forEach((d) => d.classList.remove("active"));
+            dot.classList.add("active");
+            // In a real implementation, this would change the testimonial content
+          });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+          anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute("href");
+            if (targetId === "#") return;
+
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+              window.scrollTo({
+                top: targetElement.offsetTop - 80,
+                behavior: "smooth",
+              });
+            }
+          });
+        });
+
+        // Parallax effect for glow orbs
+        window.addEventListener("scroll", () => {
+          const scrollY = window.scrollY;
+          document.querySelector(".glow-orb-1").style.transform = `translateY(${
+            scrollY * 0.05
+          }px)`;
+          document.querySelector(".glow-orb-2").style.transform = `translateY(${
+            scrollY * -0.03
+          }px)`;
+          document.querySelector(".glow-orb-3").style.transform = `translateY(${
+            scrollY * 0.02
+          }px)`;
+        });
+      });
+    </script>
+  </body>
+</html>

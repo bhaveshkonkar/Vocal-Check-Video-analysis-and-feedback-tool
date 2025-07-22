@@ -1,0 +1,3773 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Analysis Tool</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <style>
+      :root {
+        --bg-gradient: linear-gradient(135deg, #0f172a, #1e293b);
+        --card-bg: rgba(255, 255, 255, 0.03);
+        --card-border: rgba(255, 255, 255, 0.1);
+        --text-primary: #f8fafc;
+        --text-secondary: #cbd5e1;
+        --accent-purple: #a855f7;
+        --accent-blue: #3b82f6;
+        --accent-pink: #ec4899;
+        --accent-teal: #14b8a6;
+        --accent-orange: #f97316;
+        --accent-green: #22c55e;
+        --glow-purple: rgba(168, 85, 247, 0.5);
+        --glow-blue: rgba(59, 130, 246, 0.5);
+        --glow-pink: rgba(236, 72, 153, 0.5);
+        --glow-teal: rgba(20, 184, 166, 0.5);
+        --glow-orange: rgba(249, 115, 22, 0.5);
+        --glow-green: rgba(34, 197, 94, 0.5);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--bg-gradient);
+        color: var(--text-primary);
+        font-family: "Outfit", sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        position: relative;
+      }
+
+      body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        z-index: -1;
+      }
+
+      /* PPT Analysis Modal */
+      .ppt-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        animation: fadeIn 0.3s ease;
+      }
+
+      .ppt-modal-content {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        margin: 10% auto;
+        padding: 40px;
+        width: 90%;
+        max-width: 500px;
+        text-align: center;
+        backdrop-filter: blur(20px);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        position: relative;
+        animation: slideIn 0.4s ease;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      @keyframes slideIn {
+        from { 
+          opacity: 0;
+          transform: translateY(-50px) scale(0.9);
+        }
+        to { 
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .ppt-modal h2 {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 2rem;
+        margin-bottom: 20px;
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-purple),
+          var(--accent-pink)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .ppt-modal p {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+        line-height: 1.6;
+      }
+
+      .ppt-modal-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+      }
+
+      .ppt-btn {
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 14px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        font-family: "Outfit", sans-serif;
+        letter-spacing: 0.5px;
+        box-shadow: 0 10px 20px -5px var(--glow-blue);
+      }
+
+      .ppt-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 25px -5px var(--glow-purple);
+      }
+
+      .ppt-btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--card-border);
+        color: var(--text-primary);
+      }
+
+      .ppt-btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 20px -5px rgba(255, 255, 255, 0.1);
+      }
+
+      .close-modal {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .close-modal:hover {
+        color: var(--text-primary);
+        transform: scale(1.1);
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 60px;
+        position: relative;
+      }
+
+      .header h1 {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-purple),
+          var(--accent-pink)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        position: relative;
+        display: inline-block;
+      }
+
+      .header p {
+        color: var(--text-secondary);
+        font-size: 1.2rem;
+        max-width: 600px;
+        margin: 0 auto;
+        opacity: 0.8;
+      }
+
+      .glow-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        z-index: -1;
+        opacity: 0.6;
+      }
+
+      .glow-orb-1 {
+        width: 300px;
+        height: 300px;
+        background: var(--accent-purple);
+        top: -100px;
+        left: -150px;
+        animation: float 8s ease-in-out infinite;
+      }
+
+      .glow-orb-2 {
+        width: 250px;
+        height: 250px;
+        background: var(--accent-blue);
+        top: 30%;
+        right: -100px;
+        animation: float 10s ease-in-out infinite 1s;
+      }
+
+      .glow-orb-3 {
+        width: 200px;
+        height: 200px;
+        background: var(--accent-pink);
+        bottom: 10%;
+        left: 10%;
+        animation: float 7s ease-in-out infinite 0.5s;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0) scale(1);
+        }
+        50% {
+          transform: translateY(-20px) scale(1.05);
+        }
+      }
+
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 30px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3);
+      }
+
+      .card h2 {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.8rem;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        position: relative;
+      }
+
+      .card h2::before {
+        content: "";
+        display: block;
+        width: 40px;
+        height: 3px;
+        margin-right: 15px;
+        border-radius: 3px;
+      }
+
+      .upload-card h2::before {
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+      }
+
+      .transcription-card h2::before {
+        background: linear-gradient(
+          to right,
+          var(--accent-purple),
+          var(--accent-pink)
+        );
+      }
+
+      .enhanced-transcription-card h2::before {
+        background: linear-gradient(
+          to right,
+          var(--accent-green),
+          var(--accent-teal)
+        );
+      }
+
+      .content-card h2::before {
+        background: linear-gradient(
+          to right,
+          var(--accent-pink),
+          var(--accent-teal)
+        );
+      }
+
+      .body-card h2::before {
+        background: linear-gradient(
+          to right,
+          var(--accent-teal),
+          var(--accent-blue)
+        );
+      }
+
+      .speech-card h2::before {
+        background: linear-gradient(
+          to right,
+          var(--accent-green),
+          var(--accent-blue)
+        );
+      }
+
+      .improvements-card h2::before {
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-orange)
+        );
+      }
+
+      .score-card h2::before {
+        background: linear-gradient(
+          to right,
+          var(--accent-orange),
+          var(--accent-purple)
+        );
+      }
+
+      .recommendations-card h2::before {
+        background: linear-gradient(
+          to right,
+          var(--accent-purple),
+          var(--accent-green)
+        );
+      }
+
+      .all-suggestions-card h2::before {
+        background: linear-gradient(
+          to right,
+          var(--accent-green),
+          var(--accent-pink)
+        );
+      }
+
+      .upload-area {
+        border: 2px dashed var(--card-border);
+        border-radius: 16px;
+        padding: 40px;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      .upload-area:hover {
+        border-color: var(--accent-blue);
+        background: rgba(59, 130, 246, 0.05);
+      }
+
+      .upload-area.drag-over {
+        border-color: var(--accent-purple);
+        background: rgba(168, 85, 247, 0.1);
+        transform: scale(1.02);
+      }
+
+      .upload-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 20px;
+        position: relative;
+      }
+
+      .upload-icon svg {
+        width: 100%;
+        height: 100%;
+        fill: none;
+        stroke: var(--text-primary);
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .upload-text {
+        margin-bottom: 20px;
+      }
+
+      .upload-text h3 {
+        font-size: 1.4rem;
+        margin-bottom: 10px;
+      }
+
+      .upload-text p {
+        color: var(--text-secondary);
+        font-size: 1rem;
+      }
+
+      .file-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .analyze-btn {
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 14px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        margin-top: 20px;
+        font-family: "Outfit", sans-serif;
+        letter-spacing: 0.5px;
+        box-shadow: 0 10px 20px -5px var(--glow-blue);
+      }
+
+      .analyze-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 25px -5px var(--glow-purple);
+      }
+
+      .analyze-btn:active {
+        transform: translateY(1px);
+      }
+
+      .analyze-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: all 0.6s;
+      }
+
+      .analyze-btn:hover::before {
+        left: 100%;
+      }
+
+      .analyze-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 60px 20px;
+      }
+
+      .loader {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 30px;
+      }
+
+      .loader-circle {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 4px solid transparent;
+      }
+
+      .loader-circle-1 {
+        border-top-color: var(--accent-blue);
+        animation: spin 1.5s linear infinite;
+      }
+
+      .loader-circle-2 {
+        border-right-color: var(--accent-purple);
+        animation: spin 2s linear infinite;
+      }
+
+      .loader-circle-3 {
+        border-bottom-color: var(--accent-pink);
+        animation: spin 2.5s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .loading-text {
+        font-size: 1.2rem;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+      }
+
+      .loading-subtext {
+        color: var(--text-secondary);
+        font-size: 1rem;
+      }
+
+      .loading-progress {
+        width: 100%;
+        max-width: 300px;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        margin: 20px auto 0;
+        overflow: hidden;
+      }
+
+      .loading-progress-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-purple),
+          var(--accent-pink)
+        );
+        border-radius: 3px;
+        animation: progress 3s ease-in-out infinite;
+      }
+
+      @keyframes progress {
+        0% {
+          width: 0%;
+        }
+        50% {
+          width: 70%;
+        }
+        100% {
+          width: 100%;
+        }
+      }
+
+      .error-message {
+        display: none;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+        padding: 20px;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+      }
+
+      @keyframes shake {
+        10%,
+        90% {
+          transform: translate3d(-1px, 0, 0);
+        }
+        20%,
+        80% {
+          transform: translate3d(2px, 0, 0);
+        }
+        30%,
+        50%,
+        70% {
+          transform: translate3d(-4px, 0, 0);
+        }
+        40%,
+        60% {
+          transform: translate3d(4px, 0, 0);
+        }
+      }
+
+      .result-section {
+        display: none;
+      }
+
+      .confidence-section {
+        margin-bottom: 25px;
+      }
+
+      .confidence-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .confidence-label {
+        font-size: 1.1rem;
+        font-weight: 500;
+      }
+
+      .confidence-value {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.2rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        transition: all 0.5s ease;
+      }
+
+      .transcription-card .confidence-value {
+        color: var(--accent-purple);
+      }
+
+      .enhanced-transcription-card .confidence-value {
+        color: var(--accent-green);
+      }
+
+      .content-card .confidence-value {
+        color: var(--accent-pink);
+      }
+
+      .body-card .confidence-value {
+        color: var(--accent-teal);
+      }
+
+      .speech-card .confidence-value {
+        color: var(--accent-green);
+      }
+
+      .improvements-card .confidence-value {
+        color: var(--accent-orange);
+      }
+
+      .all-suggestions-card .confidence-value {
+        color: var(--accent-pink);
+      }
+
+      .confidence-bar {
+        height: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 5px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .confidence-bar::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 5px;
+        z-index: 1;
+      }
+
+      .confidence-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 5px;
+        position: relative;
+        z-index: 2;
+        transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .transcription-card .confidence-fill {
+        background: linear-gradient(
+          to right,
+          var(--accent-purple),
+          var(--accent-pink)
+        );
+        box-shadow: 0 0 20px var(--glow-purple);
+      }
+
+      .enhanced-transcription-card .confidence-fill {
+        background: linear-gradient(
+          to right,
+          var(--accent-green),
+          var(--accent-teal)
+        );
+        box-shadow: 0 0 20px var(--glow-green);
+      }
+
+      .content-card .confidence-fill {
+        background: linear-gradient(
+          to right,
+          var(--accent-pink),
+          var(--accent-teal)
+        );
+        box-shadow: 0 0 20px var(--glow-pink);
+      }
+
+      .body-card .confidence-fill {
+        background: linear-gradient(
+          to right,
+          var(--accent-teal),
+          var(--accent-blue)
+        );
+        box-shadow: 0 0 20px var(--glow-teal);
+      }
+
+      .speech-card .confidence-fill {
+        background: linear-gradient(
+          to right,
+          var(--accent-green),
+          var(--accent-blue)
+        );
+        box-shadow: 0 0 20px var(--glow-green);
+      }
+
+      .improvements-card .confidence-fill {
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-orange)
+        );
+        box-shadow: 0 0 20px var(--glow-blue);
+      }
+
+      .all-suggestions-card .confidence-fill {
+        background: linear-gradient(
+          to right,
+          var(--accent-green),
+          var(--accent-pink)
+        );
+        box-shadow: 0 0 20px var(--glow-green);
+      }
+
+      .confidence-fill::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent
+        );
+        animation: shimmer 2s infinite;
+      }
+
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+
+      .content-box {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        padding: 20px;
+        margin-top: 25px;
+        line-height: 1.7;
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transform: translateY(20px);
+        opacity: 0;
+        transition: all 0.6s ease;
+      }
+
+      .content-box.visible {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .chart-container {
+        height: 350px;
+        margin: 30px 0;
+        opacity: 0;
+        transform: scale(0.95);
+        transition: all 0.8s ease;
+      }
+
+      .chart-container.visible {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      .body-metrics,
+      .speech-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+      }
+
+      .metric-card {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+      }
+
+      .metric-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .metric-icon {
+        width: 50px;
+        height: 50px;
+        margin: 0 auto 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+      }
+
+      .facial-expressions .metric-icon {
+        background: rgba(168, 85, 247, 0.1);
+        color: var(--accent-purple);
+      }
+
+      .eye-contact .metric-icon {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--accent-blue);
+      }
+
+      .posture .metric-icon {
+        background: rgba(236, 72, 153, 0.1);
+        color: var(--accent-pink);
+      }
+
+      .gestures .metric-icon {
+        background: rgba(20, 184, 166, 0.1);
+        color: var(--accent-teal);
+      }
+
+      .speech-pace .metric-icon {
+        background: rgba(34, 197, 94, 0.1);
+        color: var(--accent-green);
+      }
+
+      .vocal-variety .metric-icon {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--accent-blue);
+      }
+
+      .filler-words .metric-icon {
+        background: rgba(236, 72, 153, 0.1);
+        color: var(--accent-pink);
+      }
+
+      .clarity .metric-icon {
+        background: rgba(249, 115, 22, 0.1);
+        color: var(--accent-orange);
+      }
+
+      .metric-value {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+
+      .facial-expressions .metric-value {
+        color: var(--accent-purple);
+      }
+
+      .eye-contact .metric-value {
+        color: var(--accent-blue);
+      }
+
+      .posture .metric-value {
+        color: var(--accent-pink);
+      }
+
+      .gestures .metric-value {
+        color: var(--accent-teal);
+      }
+
+      .speech-pace .metric-value {
+        color: var(--accent-green);
+      }
+
+      .vocal-variety .metric-value {
+        color: var(--accent-blue);
+      }
+
+      .filler-words .metric-value {
+        color: var(--accent-pink);
+      }
+
+      .clarity .metric-value {
+        color: var(--accent-orange);
+      }
+
+      .metric-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      /* Improvements section styles */
+      .improvement-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        border-left: 3px solid var(--accent-orange);
+        transition: all 0.3s ease;
+      }
+
+      .improvement-item:hover {
+        transform: translateX(5px);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .improvement-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .improvement-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+      }
+
+      .improvement-priority {
+        font-size: 0.8rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 500;
+        text-transform: uppercase;
+      }
+
+      .priority-high {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+      }
+
+      .priority-medium {
+        background: rgba(249, 115, 22, 0.15);
+        color: #f97316;
+      }
+
+      .priority-low {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+      }
+
+      .improvement-why {
+        margin-bottom: 10px;
+        font-style: italic;
+        color: var(--text-secondary);
+      }
+
+      .improvement-how {
+        padding-left: 16px;
+        border-left: 1px dashed rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
+      }
+
+      /* New Score Visualization Styles */
+      .score-card {
+        background: linear-gradient(
+          135deg,
+          rgba(15, 23, 42, 0.8),
+          rgba(30, 41, 59, 0.8)
+        );
+        backdrop-filter: blur(20px);
+      }
+
+      .visualization-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+        margin-top: 30px;
+      }
+
+      .visualization-item {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      .visualization-item.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .visualization-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .visualization-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        text-align: center;
+        color: var(--text-primary);
+      }
+
+      .visualization-chart {
+        width: 100%;
+        height: 250px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+        opacity: 0;
+      }
+
+      .visualization-chart.visible {
+        opacity: 1;
+      }
+
+      .visualization-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        text-align: center;
+        line-height: 1.6;
+      }
+
+      .score-summary {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        text-align: center;
+      }
+
+      .score-summary-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-purple),
+          var(--accent-pink)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .score-summary-text {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        line-height: 1.7;
+        margin-bottom: 20px;
+      }
+
+      .score-badge {
+        display: inline-block;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 600;
+        font-size: 1.2rem;
+        margin-top: 10px;
+        background: linear-gradient(
+          to right,
+          var(--accent-blue),
+          var(--accent-purple)
+        );
+        color: white;
+        box-shadow: 0 10px 20px -5px var(--glow-blue);
+      }
+
+      /* Speech analysis specific styles */
+      .speech-waveform {
+        width: 100%;
+        height: 120px;
+        margin: 20px 0;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .speech-timeline {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+      }
+
+      .filler-words-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .filler-word {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 5px 12px;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+      }
+
+      .filler-word-count {
+        background: rgba(236, 72, 153, 0.2);
+        color: var(--accent-pink);
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        margin-left: 8px;
+      }
+
+      /* YouTube Recommendations Section */
+      .recommendations-card {
+        background: linear-gradient(
+          135deg,
+          rgba(15, 23, 42, 0.8),
+          rgba(30, 41, 59, 0.8)
+        );
+        backdrop-filter: blur(20px);
+      }
+
+      .recommendations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        margin-top: 25px;
+      }
+
+      .recommendation-item {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .recommendation-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .recommendation-thumbnail {
+        width: 100%;
+        height: 160px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+      }
+
+      .recommendation-thumbnail::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          to bottom,
+          transparent 60%,
+          rgba(0, 0, 0, 0.7)
+        );
+      }
+
+      .recommendation-play {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+
+      .recommendation-item:hover .recommendation-play {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .recommendation-play svg {
+        width: 20px;
+        height: 20px;
+        fill: white;
+      }
+
+      .recommendation-content {
+        padding: 16px;
+      }
+
+      .recommendation-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        color: var(--text-primary);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.4;
+      }
+
+      .recommendation-channel {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 10px;
+      }
+
+      .recommendation-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+      }
+
+      .recommendation-tag {
+        font-size: 0.75rem;
+        padding: 3px 8px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-secondary);
+      }
+
+      .recommendation-category {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        border-radius: 12px;
+        z-index: 2;
+        font-weight: 500;
+      }
+
+      .category-speaking {
+        background: rgba(168, 85, 247, 0.2);
+        color: var(--accent-purple);
+      }
+
+      .category-facial {
+        background: rgba(236, 72, 153, 0.2);
+        color: var(--accent-pink);
+      }
+
+      .category-gestures {
+        background: rgba(20, 184, 166, 0.2);
+        color: var(--accent-teal);
+      }
+
+      .category-eye-contact {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--accent-blue);
+      }
+
+      .category-body-language {
+        background: rgba(34, 197, 94, 0.2);
+        color: var(--accent-green);
+      }
+
+      /* All Suggestions Section */
+      .all-suggestions-card {
+        background: linear-gradient(
+          135deg,
+          rgba(15, 23, 42, 0.8),
+          rgba(30, 41, 59, 0.8)
+        );
+        backdrop-filter: blur(20px);
+      }
+
+      .audio-player-container {
+        margin-top: 20px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .audio-player {
+        width: 100%;
+        height: 50px;
+        margin-top: 15px;
+      }
+
+      .audio-controls {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-top: 15px;
+      }
+
+      .audio-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: var(--text-primary);
+      }
+
+      .audio-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(1.05);
+      }
+
+      .audio-btn svg {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+      }
+
+      .audio-status {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+      }
+
+      .audio-player-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+        color: var(--text-primary);
+      }
+
+      .audio-player-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+      }
+
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 2.5rem;
+        }
+
+        .header p {
+          font-size: 1rem;
+        }
+
+        .card {
+          padding: 20px;
+        }
+
+        .upload-area {
+          padding: 30px 20px;
+        }
+
+        .body-metrics,
+        .speech-metrics {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .visualization-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .recommendations-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .ppt-modal-content {
+          margin: 20% auto;
+          padding: 30px;
+        }
+
+        .ppt-modal-buttons {
+          flex-direction: column;
+          gap: 15px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .header h1 {
+          font-size: 2rem;
+        }
+
+        .body-metrics,
+        .speech-metrics {
+          grid-template-columns: 1fr;
+        }
+
+        .card h2 {
+          font-size: 1.5rem;
+        }
+      }
+
+      /* Animations */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes scaleIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.8s forwards;
+      }
+
+      .fade-in-up {
+        animation: fadeInUp 0.8s forwards;
+      }
+
+      .scale-in {
+        animation: scaleIn 0.8s forwards;
+      }
+
+      .delay-1 {
+        animation-delay: 0.1s;
+      }
+
+      .delay-1-5 {
+        animation-delay: 0.15s;
+      }
+
+      .delay-2 {
+        animation-delay: 0.2s;
+      }
+
+      .delay-3 {
+        animation-delay: 0.3s;
+      }
+
+      .delay-4 {
+        animation-delay: 0.4s;
+      }
+
+      .delay-5 {
+        animation-delay: 0.5s;
+      }
+
+      .delay-6 {
+        animation-delay: 0.6s;
+      }
+
+      .delay-7 {
+        animation-delay: 0.7s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
+
+    <!-- PPT Analysis Modal -->
+    <div id="pptModal" class="ppt-modal">
+      <div class="ppt-modal-content">
+        <button class="close-modal" id="closePptModal">&times;</button>
+        <h2>🎯 Enhance Your Presentation</h2>
+        <p>
+          Would you like to analyze your PowerPoint presentation and generate a speaking script with real-time tips to improve your delivery?
+        </p>
+        <div class="ppt-modal-buttons">
+          <button class="ppt-btn" id="analyzePptBtn">
+            📊 Yes, Analyze PPT
+          </button>
+          <button class="ppt-btn ppt-btn-secondary" id="continueVideoBtn">
+            🎥 Continue with Video Analysis
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="header fade-in">
+        <h1>Vocal Check : Real -Time Voice Feedback System</h1>
+        <p>
+          Upload your video to get detailed analysis of transcription, content,
+          and body language
+        </p>
+      </div>
+
+      <div class="card upload-card fade-in-up">
+        <h2>Upload Video</h2>
+        <div class="upload-area" id="dropArea">
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          <div class="upload-text">
+            <h3>Drag & Drop your video here</h3>
+            <p>or click to browse your files</p>
+          </div>
+          <input
+            type="file"
+            class="file-input"
+            id="videoFile"
+            accept="video/*"
+          />
+        </div>
+        <div
+          style="
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+          "
+        >
+          <button class="analyze-btn" id="analyzeBtn" disabled>
+            Analyze Video
+          </button>
+          <a
+            href="/practice"
+            class="analyze-btn"
+            style="text-decoration: none; display: inline-block"
+          >
+            Practice Speaking
+          </a>
+        </div>
+      </div>
+
+      <div class="loading">
+        <div class="loader">
+          <div class="loader-circle loader-circle-1"></div>
+          <div class="loader-circle loader-circle-2"></div>
+          <div class="loader-circle loader-circle-3"></div>
+        </div>
+        <div class="loading-text">Processing your video</div>
+        <div class="loading-subtext">
+          This may take a few minutes depending on the video length
+        </div>
+        <div class="loading-progress">
+          <div class="loading-progress-bar"></div>
+        </div>
+      </div>
+
+      <div class="error-message" id="errorMessage"></div>
+
+      <div class="result-section">
+        <!-- New Score Visualization Section -->
+        <div class="card score-card fade-in-up">
+          <h2>Performance Score</h2>
+          <div class="score-summary">
+            <div class="score-summary-title">Your Presentation Performance</div>
+            <div class="score-summary-text">
+              Based on our analysis of your speech and body language, we've
+              calculated your overall presentation score. This score reflects
+              your effectiveness in communication, content delivery, and
+              non-verbal cues.
+            </div>
+            <div class="score-badge" id="overall-score-badge">
+              Calculating...
+            </div>
+          </div>
+        </div>
+
+        <div class="card transcription-card fade-in-up delay-1">
+          <h2>Transcription</h2>
+          <div class="confidence-section">
+            <div class="confidence-header">
+              <div class="confidence-label">Transcription Confidence</div>
+              <div class="confidence-value" id="transcription-confidence">
+                0%
+              </div>
+            </div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" id="transcription-bar"></div>
+            </div>
+          </div>
+          <div class="content-box" id="transcription"></div>
+        </div>
+
+        <!-- Enhanced Transcription Section -->
+        <div class="card enhanced-transcription-card fade-in-up delay-1-5">
+          <h2>Enhanced Transcription</h2>
+          <div class="confidence-section">
+            <div class="confidence-header">
+              <div class="confidence-label">Enhanced Transcription Quality</div>
+              <div
+                class="confidence-value"
+                id="enhanced-transcription-confidence"
+              >
+                0%
+              </div>
+            </div>
+            <div class="confidence-bar">
+              <div
+                class="confidence-fill"
+                id="enhanced-transcription-bar"
+              ></div>
+            </div>
+          </div>
+          <div class="content-box" id="enhancedTranscription"></div>
+          <div class="audio-player-container">
+            <div class="audio-player-title">
+              Listen to Enhanced Transcription
+            </div>
+            <div class="audio-player-subtitle">
+              Using this sentence structure in your presentation could enhance
+              clarity and impact
+            </div>
+
+            <audio
+              id="enhancedTranscriptionAudio"
+              class="audio-player"
+              controls
+            >
+              <source src="" type="audio/mpeg" />
+              Your browser does not support the audio element.
+            </audio>
+
+            <div class="audio-controls">
+              <button class="audio-btn" id="playEnhancedBtn">
+                <svg viewBox="0 0 24 24">
+                  <polygon
+                    points="5 3 19 12 5 21 5 3"
+                    fill="currentColor"
+                  ></polygon>
+                </svg>
+              </button>
+              <button
+                class="audio-btn"
+                id="pauseEnhancedBtn"
+                style="display: none"
+              >
+                <svg viewBox="0 0 24 24">
+                  <rect
+                    x="6"
+                    y="4"
+                    width="4"
+                    height="16"
+                    fill="currentColor"
+                  ></rect>
+                  <rect
+                    x="14"
+                    y="4"
+                    width="4"
+                    height="16"
+                    fill="currentColor"
+                  ></rect>
+                </svg>
+              </button>
+              <div class="audio-status" id="enhancedAudioStatus">
+                Ready to play
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- New Speech Analysis Section -->
+        <div class="card speech-card fade-in-up delay-2">
+          <h2>Speech Analysis</h2>
+          <div class="confidence-section">
+            <div class="confidence-header">
+              <div class="confidence-label">Speech Analysis Confidence</div>
+              <div class="confidence-value" id="speech-confidence">0%</div>
+            </div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" id="speech-bar"></div>
+            </div>
+          </div>
+
+          <div class="chart-container" id="speechChartContainer">
+            <canvas id="speechAnalysisChart"></canvas>
+          </div>
+
+          <div class="speech-metrics">
+            <div class="metric-card speech-pace">
+              <div class="metric-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <div class="metric-value" id="pace-value">0</div>
+              <div class="metric-label">Words Per Minute</div>
+            </div>
+
+            <div class="metric-card vocal-variety">
+              <div class="metric-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M2 10h20"></path>
+                  <path d="M6 6h12"></path>
+                  <path d="M4 14h16"></path>
+                  <path d="M8 18h8"></path>
+                </svg>
+              </div>
+              <div class="metric-value" id="variety-value">0%</div>
+              <div class="metric-label">Vocal Variety</div>
+            </div>
+
+            <div class="metric-card filler-words">
+              <div class="metric-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                  ></path>
+                </svg>
+              </div>
+              <div class="metric-value" id="filler-value">0</div>
+              <div class="metric-label">Filler Words</div>
+            </div>
+
+            <div class="metric-card clarity">
+              <div class="metric-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 20h9"></path>
+                  <path
+                    d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
+                  ></path>
+                </svg>
+              </div>
+              <div class="metric-value" id="clarity-value">0%</div>
+              <div class="metric-label">Clarity</div>
+            </div>
+          </div>
+
+          <div class="speech-waveform" id="speech-waveform">
+            <!-- Speech waveform will be rendered here -->
+          </div>
+          <div class="speech-timeline">
+            <span>0:00</span>
+            <span id="speech-duration">0:00</span>
+          </div>
+
+          <h3
+            style="
+              margin-top: 30px;
+              font-size: 1.2rem;
+              color: var(--text-primary);
+            "
+          >
+            Detected Filler Words
+          </h3>
+          <div class="filler-words-list" id="filler-words-list">
+            <!-- Filler words will be added here -->
+          </div>
+
+          <div class="content-box" id="speechAnalysis"></div>
+          <div class="audio-player-container">
+            <div class="audio-player-title">Listen to Speech Analysis</div>
+            <div class="audio-player-subtitle">
+              Hear detailed feedback about your speech patterns and delivery
+              style
+            </div>
+
+            <audio id="speechAnalysisAudio" class="audio-player" controls>
+              <source src="" type="audio/mpeg" />
+              Your browser does not support the audio element.
+            </audio>
+
+            <div class="audio-controls">
+              <button class="audio-btn" id="playSpeechBtn">
+                <svg viewBox="0 0 24 24">
+                  <polygon
+                    points="5 3 19 12 5 21 5 3"
+                    fill="currentColor"
+                  ></polygon>
+                </svg>
+              </button>
+              <button
+                class="audio-btn"
+                id="pauseSpeechBtn"
+                style="display: none"
+              >
+                <svg viewBox="0 0 24 24">
+                  <rect
+                    x="6"
+                    y="4"
+                    width="4"
+                    height="16"
+                    fill="currentColor"
+                  ></rect>
+                  <rect
+                    x="14"
+                    y="4"
+                    width="4"
+                    height="16"
+                    fill="currentColor"
+                  ></rect>
+                </svg>
+              </button>
+              <div class="audio-status" id="speechAudioStatus">
+                Ready to play
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card content-card fade-in-up delay-3">
+          <h2>Content Analysis</h2>
+          <div class="confidence-section">
+            <div class="confidence-header">
+              <div class="confidence-label">Content Analysis Confidence</div>
+              <div class="confidence-value" id="content-confidence">0%</div>
+            </div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" id="content-bar"></div>
+            </div>
+          </div>
+          <div class="content-box" id="analysis"></div>
+        </div>
+
+        <div class="card body-card fade-in-up delay-4">
+          <h2>Body Language Analysis</h2>
+          <div class="confidence-section">
+            <div class="confidence-header">
+              <div class="confidence-label">
+                Overall Body Language Confidence
+              </div>
+              <div class="confidence-value" id="body-confidence">0%</div>
+            </div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" id="body-bar"></div>
+            </div>
+          </div>
+
+          <div class="chart-container" id="chartContainer">
+            <canvas id="bodyLanguageChart"></canvas>
+          </div>
+
+          <div class="body-metrics">
+            <div class="metric-card facial-expressions">
+              <div class="metric-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                  <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                  <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                </svg>
+              </div>
+              <div class="metric-value" id="facial-value">0%</div>
+              <div class="metric-label">Facial Expressions</div>
+            </div>
+
+            <div class="metric-card eye-contact">
+              <div class="metric-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </div>
+              <div class="metric-value" id="eye-value">0%</div>
+              <div class="metric-label">Eye Contact</div>
+            </div>
+
+            <div class="metric-card posture">
+              <div class="metric-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 2v20M2 12h20"></path>
+                </svg>
+              </div>
+              <div class="metric-value" id="posture-value">0%</div>
+              <div class="metric-label">Posture</div>
+            </div>
+
+            <div class="metric-card gestures">
+              <div class="metric-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M6 9l6 6 6-6"></path>
+                </svg>
+              </div>
+              <div class="metric-value" id="gestures-value">0%</div>
+              <div class="metric-label">Gestures</div>
+            </div>
+          </div>
+
+          <div class="content-box" id="bodyAnalysis"></div>
+        </div>
+
+        <!-- Improvements Needed Section -->
+        <div class="card improvements-card fade-in-up delay-5">
+          <h2>Improvements Needed</h2>
+          <div class="confidence-section">
+            <div class="confidence-header">
+              <div class="confidence-label">
+                Improvement Recommendations Confidence
+              </div>
+              <div class="confidence-value" id="improvements-confidence">
+                0%
+              </div>
+            </div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" id="improvements-bar"></div>
+            </div>
+          </div>
+
+          <div id="improvements-container">
+            <!-- Improvement items will be dynamically added here -->
+          </div>
+
+          <div class="content-box" id="improvementsAnalysis"></div>
+        </div>
+
+        <!-- All Suggestions Section -->
+        <div class="card all-suggestions-card fade-in-up delay-6">
+          <h2>All Suggestions</h2>
+          <div class="confidence-section">
+            <div class="confidence-header">
+              <div class="confidence-label">
+                Comprehensive Suggestions Confidence
+              </div>
+              <div class="confidence-value" id="all-suggestions-confidence">
+                0%
+              </div>
+            </div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" id="all-suggestions-bar"></div>
+            </div>
+          </div>
+
+          <div class="content-box" id="allSuggestionsContent"></div>
+
+          <div class="audio-player-container">
+            <div class="audio-player-title">Listen to Suggestions</div>
+            <div class="audio-player-subtitle">
+              Our AI will read out all suggestions to help you improve your
+              presentation skills
+            </div>
+
+            <audio id="suggestionsAudio" class="audio-player" controls>
+              <source src="" type="audio/mpeg" />
+              Your browser does not support the audio element.
+            </audio>
+
+            <div class="audio-controls">
+              <button class="audio-btn" id="playBtn">
+                <svg viewBox="0 0 24 24">
+                  <polygon
+                    points="5 3 19 12 5 21 5 3"
+                    fill="currentColor"
+                  ></polygon>
+                </svg>
+              </button>
+              <button class="audio-btn" id="pauseBtn" style="display: none">
+                <svg viewBox="0 0 24 24">
+                  <rect
+                    x="6"
+                    y="4"
+                    width="4"
+                    height="16"
+                    fill="currentColor"
+                  ></rect>
+                  <rect
+                    x="14"
+                    y="4"
+                    width="4"
+                    height="16"
+                    fill="currentColor"
+                  ></rect>
+                </svg>
+              </button>
+              <div class="audio-status" id="audioStatus">Ready to play</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- YouTube Recommendations Section -->
+        <div class="card recommendations-card fade-in-up delay-7">
+          <h2>Recommended Learning Resources</h2>
+          <p style="color: var(--text-secondary); margin-bottom: 20px">
+            Explore these curated YouTube videos to improve your presentation
+            skills in key areas
+          </p>
+
+          <div class="recommendations-grid">
+            <!-- Speaking Skills -->
+            <div class="recommendation-item">
+              <a
+                href="https://www.youtube.com/watch?v=Unzc731iCUY"
+                target="_blank"
+                style="text-decoration: none; color: inherit"
+              >
+                <div
+                  class="recommendation-thumbnail"
+                  style="
+                    background-image: url('https://i.ytimg.com/vi/Unzc731iCUY/hqdefault.jpg');
+                  "
+                >
+                  <span class="recommendation-category category-speaking"
+                    >Speaking Skills</span
+                  >
+                  <div class="recommendation-play">
+                    <svg viewBox="0 0 24 24">
+                      <polygon
+                        points="5 3 19 12 5 21 5 3"
+                        fill="currentColor"
+                      ></polygon>
+                    </svg>
+                  </div>
+                </div>
+                <div class="recommendation-content">
+                  <div class="recommendation-title">
+                    How to speak so that people want to listen | Julian Treasure
+                  </div>
+                  <div class="recommendation-channel">TED</div>
+                  <div class="recommendation-tags">
+                    <span class="recommendation-tag">Voice Projection</span>
+                    <span class="recommendation-tag">Clarity</span>
+                  </div>
+                </div>
+              </a>
+            </div>
+
+            <!-- Facial Expressions -->
+            <div class="recommendation-item">
+              <a
+                href="https://www.youtube.com/watch?v=B0Jsy7Oi-oc"
+                target="_blank"
+                style="text-decoration: none; color: inherit"
+              >
+                <div
+                  class="recommendation-thumbnail"
+                  style="
+                    background-image: url('https://i.ytimg.com/vi/B0Jsy7Oi-oc/hqdefault.jpg');
+                  "
+                >
+                  <span class="recommendation-category category-facial"
+                    >Facial Expressions</span
+                  >
+                  <div class="recommendation-play">
+                    <svg viewBox="0 0 24 24">
+                      <polygon
+                        points="5 3 19 12 5 21 5 3"
+                        fill="currentColor"
+                      ></polygon>
+                    </svg>
+                  </div>
+                </div>
+                <div class="recommendation-content">
+                  <div class="recommendation-title">
+                    Master Your Facial Expressions During Presentations
+                  </div>
+                  <div class="recommendation-channel">Communication Skills</div>
+                  <div class="recommendation-tags">
+                    <span class="recommendation-tag">Expressions</span>
+                    <span class="recommendation-tag">Confidence</span>
+                  </div>
+                </div>
+              </a>
+            </div>
+
+            <!-- Gestures -->
+            <div class="recommendation-item">
+              <a
+                href="https://www.youtube.com/watch?v=ZK3jSXYBNak"
+                target="_blank"
+                style="text-decoration: none; color: inherit"
+              >
+                <div
+                  class="recommendation-thumbnail"
+                  style="
+                    background-image: url('https://i.ytimg.com/vi/ZK3jSXYBNak/hqdefault.jpg');
+                  "
+                >
+                  <span class="recommendation-category category-gestures"
+                    >Gestures</span
+                  >
+                  <div class="recommendation-play">
+                    <svg viewBox="0 0 24 24">
+                      <polygon
+                        points="5 3 19 12 5 21 5 3"
+                        fill="currentColor"
+                      ></polygon>
+                    </svg>
+                  </div>
+                </div>
+                <div class="recommendation-content">
+                  <div class="recommendation-title">
+                    Hand Gestures: How to Use Your Hands When Speaking
+                  </div>
+                  <div class="recommendation-channel">
+                    Public Speaking Skills
+                  </div>
+                  <div class="recommendation-tags">
+                    <span class="recommendation-tag">Hand Gestures</span>
+                    <span class="recommendation-tag">Body Language</span>
+                  </div>
+                </div>
+              </a>
+            </div>
+
+            <!-- Eye Contact -->
+            <div class="recommendation-item">
+              <a
+                href="https://www.youtube.com/watch?v=gMU-EjnJk0M"
+                target="_blank"
+                style="text-decoration: none; color: inherit"
+              >
+                <div
+                  class="recommendation-thumbnail"
+                  style="
+                    background-image: url('https://i.ytimg.com/vi/gMU-EjnJk0M/hqdefault.jpg');
+                  "
+                >
+                  <span class="recommendation-category category-eye-contact"
+                    >Eye Contact</span
+                  >
+                  <div class="recommendation-play">
+                    <svg viewBox="0 0 24 24">
+                      <polygon
+                        points="5 3 19 12 5 21 5 3"
+                        fill="currentColor"
+                      ></polygon>
+                    </svg>
+                  </div>
+                </div>
+                <div class="recommendation-content">
+                  <div class="recommendation-title">
+                    The Power of Eye Contact in Public Speaking
+                  </div>
+                  <div class="recommendation-channel">Presentation Skills</div>
+                  <div class="recommendation-tags">
+                    <span class="recommendation-tag">Connection</span>
+                    <span class="recommendation-tag">Engagement</span>
+                  </div>
+                </div>
+              </a>
+            </div>
+
+            <!-- Body Language -->
+            <div class="recommendation-item">
+              <a
+                href="https://www.youtube.com/watch?v=cFLjudWTuGQ"
+                target="_blank"
+                style="text-decoration: none; color: inherit"
+              >
+                <div
+                  class="recommendation-thumbnail"
+                  style="
+                    background-image: url('https://i.ytimg.com/vi/cFLjudWTuGQ/hqdefault.jpg');
+                  "
+                >
+                  <span class="recommendation-category category-body-language"
+                    >Body Language</span
+                  >
+                  <div class="recommendation-play">
+                    <svg viewBox="0 0 24 24">
+                      <polygon
+                        points="5 3 19 12 5 21 5 3"
+                        fill="currentColor"
+                      ></polygon>
+                    </svg>
+                  </div>
+                </div>
+                <div class="recommendation-content">
+                  <div class="recommendation-title">
+                    Your Body Language Shapes Who You Are | Amy Cuddy
+                  </div>
+                  <div class="recommendation-channel">TED</div>
+                  <div class="recommendation-tags">
+                    <span class="recommendation-tag">Posture</span>
+                    <span class="recommendation-tag">Confidence</span>
+                  </div>
+                </div>
+              </a>
+            </div>
+
+            <!-- Managing Nerves -->
+            <div class="recommendation-item">
+              <a
+                href="https://www.youtube.com/watch?v=a2MR5XbJtXU"
+                target="_blank"
+                style="text-decoration: none; color: inherit"
+              >
+                <div
+                  class="recommendation-thumbnail"
+                  style="
+                    background-image: url('https://i.ytimg.com/vi/a2MR5XbJtXU/hqdefault.jpg');
+                  "
+                >
+                  <span class="recommendation-category category-speaking"
+                    >Managing Nerves</span
+                  >
+                  <div class="recommendation-play">
+                    <svg viewBox="0 0 24 24">
+                      <polygon
+                        points="5 3 19 12 5 21 5 3"
+                        fill="currentColor"
+                      ></polygon>
+                    </svg>
+                  </div>
+                </div>
+                <div class="recommendation-content">
+                  <div class="recommendation-title">
+                    How to Overcome Nervousness During Presentations
+                  </div>
+                  <div class="recommendation-channel">Presentation Mastery</div>
+                  <div class="recommendation-tags">
+                    <span class="recommendation-tag">Anxiety</span>
+                    <span class="recommendation-tag">Confidence</span>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let bodyLanguageChart = null;
+      let gaugeChart = null;
+      let radarChart = null;
+      let priorityChart = null;
+      let comparisonChart = null;
+      let speechAnalysisChart = null;
+      let suggestionsAudio = null;
+
+      const dropArea = document.getElementById("dropArea");
+      const fileInput = document.getElementById("videoFile");
+      const analyzeBtn = document.getElementById("analyzeBtn");
+      const playBtn = document.getElementById("playBtn");
+      const pauseBtn = document.getElementById("pauseBtn");
+      const audioStatus = document.getElementById("audioStatus");
+
+      // PPT Modal elements
+      const pptModal = document.getElementById("pptModal");
+      const closePptModal = document.getElementById("closePptModal");
+      const analyzePptBtn = document.getElementById("analyzePptBtn");
+      const continueVideoBtn = document.getElementById("continueVideoBtn");
+
+      // Show PPT modal when page loads
+      window.addEventListener('load', function() {
+        setTimeout(() => {
+          pptModal.style.display = 'block';
+        }, 1000); // Show modal after 1 second
+      });
+
+      // PPT Modal event listeners
+      closePptModal.addEventListener('click', function() {
+        pptModal.style.display = 'none';
+      });
+
+      analyzePptBtn.addEventListener('click', function() {
+        // Redirect to PPT analysis page
+        window.location.href = '/ppt';
+      });
+
+      continueVideoBtn.addEventListener('click', function() {
+        pptModal.style.display = 'none';
+      });
+
+      // Close modal when clicking outside
+      pptModal.addEventListener('click', function(e) {
+        if (e.target === pptModal) {
+          pptModal.style.display = 'none';
+        }
+      });
+
+      // Drag and drop functionality
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      dropArea.addEventListener("dragenter", () => {
+        dropArea.classList.add("drag-over");
+      });
+
+      dropArea.addEventListener("dragleave", () => {
+        dropArea.classList.remove("drag-over");
+      });
+
+      dropArea.addEventListener("drop", handleDrop);
+
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        dropArea.classList.remove("drag-over");
+
+        if (files.length > 0 && files[0].type.startsWith("video/")) {
+          fileInput.files = files;
+          analyzeBtn.disabled = false;
+          dropArea.style.borderColor = "var(--accent-blue)";
+        } else {
+          showError("Please select a valid video file");
+        }
+      }
+
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files.length > 0) {
+          analyzeBtn.disabled = false;
+          dropArea.style.borderColor = "var(--accent-blue)";
+        } else {
+          analyzeBtn.disabled = true;
+        }
+      });
+
+      function showError(message) {
+        const errorElement = document.getElementById("errorMessage");
+        errorElement.textContent = message;
+        errorElement.style.display = "block";
+
+        // Hide error after 5 seconds
+        setTimeout(() => {
+          errorElement.style.display = "none";
+        }, 5000);
+      }
+
+      // Audio player controls
+      playBtn.addEventListener("click", () => {
+        if (suggestionsAudio) {
+          suggestionsAudio.play();
+          playBtn.style.display = "none";
+          pauseBtn.style.display = "inline-flex";
+          audioStatus.textContent = "Playing...";
+        }
+      });
+
+      pauseBtn.addEventListener("click", () => {
+        if (suggestionsAudio) {
+          suggestionsAudio.pause();
+          pauseBtn.style.display = "none";
+          playBtn.style.display = "inline-flex";
+          audioStatus.textContent = "Paused";
+        }
+      });
+
+      function updateConfidenceBars(scores) {
+        // Update transcription confidence
+        const transcriptionScore = Math.round(scores.transcription * 100);
+        document.getElementById(
+          "transcription-confidence"
+        ).textContent = `${transcriptionScore}%`;
+
+        // Animate the bars with a slight delay between each
+        setTimeout(() => {
+          document.getElementById(
+            "transcription-bar"
+          ).style.width = `${transcriptionScore}%`;
+        }, 300);
+
+        // Update enhanced transcription confidence
+        const enhancedTranscriptionScore = Math.round(
+          scores.transcription * 1.15 * 100
+        );
+        document.getElementById(
+          "enhanced-transcription-confidence"
+        ).textContent = `${enhancedTranscriptionScore}%`;
+
+        setTimeout(() => {
+          document.getElementById(
+            "enhanced-transcription-bar"
+          ).style.width = `${enhancedTranscriptionScore}%`;
+        }, 450);
+
+        // Update content analysis confidence
+        const contentScore = Math.round(scores.content_analysis * 100);
+        document.getElementById(
+          "content-confidence"
+        ).textContent = `${contentScore}%`;
+
+        setTimeout(() => {
+          document.getElementById(
+            "content-bar"
+          ).style.width = `${contentScore}%`;
+        }, 600);
+
+        // Update body language confidence
+        const bodyScore = Math.round(scores.body_language.overall * 100);
+        document.getElementById(
+          "body-confidence"
+        ).textContent = `${bodyScore}%`;
+
+        setTimeout(() => {
+          document.getElementById("body-bar").style.width = `${bodyScore}%`;
+        }, 900);
+
+        // Update speech analysis confidence
+        const speechScore = Math.round(scores.speech_analysis.overall * 100);
+        document.getElementById(
+          "speech-confidence"
+        ).textContent = `${speechScore}%`;
+
+        setTimeout(() => {
+          document.getElementById("speech-bar").style.width = `${speechScore}%`;
+        }, 1200);
+
+        // Update improvements confidence
+        const improvementsScore = Math.round(
+          ((scores.transcription +
+            scores.content_analysis +
+            scores.body_language.overall +
+            scores.speech_analysis.overall) /
+            4) *
+            100
+        );
+        document.getElementById(
+          "improvements-confidence"
+        ).textContent = `${improvementsScore}%`;
+
+        setTimeout(() => {
+          document.getElementById(
+            "improvements-bar"
+          ).style.width = `${improvementsScore}%`;
+        }, 1500);
+
+        // Update all suggestions confidence
+        const allSuggestionsScore = Math.round(
+          ((scores.transcription +
+            scores.content_analysis +
+            scores.body_language.overall +
+            scores.speech_analysis.overall) /
+            4) *
+            100
+        );
+        document.getElementById(
+          "all-suggestions-confidence"
+        ).textContent = `${allSuggestionsScore}%`;
+
+        setTimeout(() => {
+          document.getElementById(
+            "all-suggestions-bar"
+          ).style.width = `${allSuggestionsScore}%`;
+        }, 1800);
+
+        // Update individual body language metrics
+        const facialScore = Math.round(
+          scores.body_language.facial_expressions * 100
+        );
+        const eyeScore = Math.round(scores.body_language.eye_contact * 100);
+        const postureScore = Math.round(scores.body_language.posture * 100);
+        const gesturesScore = Math.round(scores.body_language.gestures * 100);
+
+        // Update individual speech metrics
+        const paceValue = scores.speech_analysis.pace;
+        const varietyScore = Math.round(
+          scores.speech_analysis.vocal_variety * 100
+        );
+        const fillerCount = scores.speech_analysis.filler_words_count;
+        const clarityScore = Math.round(scores.speech_analysis.clarity * 100);
+
+        // Use GSAP for smoother animations
+        gsap.to("#facial-value", {
+          innerHTML: facialScore + "%",
+          duration: 1.5,
+          ease: "power2.out",
+          delay: 1.2,
+          snap: { innerHTML: 1 },
+        });
+
+        gsap.to("#eye-value", {
+          innerHTML: eyeScore + "%",
+          duration: 1.5,
+          ease: "power2.out",
+          delay: 1.4,
+          snap: { innerHTML: 1 },
+        });
+
+        gsap.to("#posture-value", {
+          innerHTML: postureScore + "%",
+          duration: 1.5,
+          ease: "power2.out",
+          delay: 1.6,
+          snap: { innerHTML: 1 },
+        });
+
+        gsap.to("#gestures-value", {
+          innerHTML: gesturesScore + "%",
+          duration: 1.5,
+          ease: "power2.out",
+          delay: 1.8,
+          snap: { innerHTML: 1 },
+        });
+
+        gsap.to("#pace-value", {
+          innerHTML: paceValue,
+          duration: 1.5,
+          ease: "power2.out",
+          delay: 1.2,
+          snap: { innerHTML: 1 },
+        });
+
+        gsap.to("#variety-value", {
+          innerHTML: varietyScore + "%",
+          duration: 1.5,
+          ease: "power2.out",
+          delay: 1.4,
+          snap: { innerHTML: 1 },
+        });
+
+        gsap.to("#filler-value", {
+          innerHTML: fillerCount,
+          duration: 1.5,
+          ease: "power2.out",
+          delay: 1.6,
+          snap: { innerHTML: 1 },
+        });
+
+        gsap.to("#clarity-value", {
+          innerHTML: clarityScore + "%",
+          duration: 1.5,
+          ease: "power2.out",
+          delay: 1.8,
+          snap: { innerHTML: 1 },
+        });
+
+        // Update body language chart with animation
+        setTimeout(() => {
+          const chartContainer = document.getElementById("chartContainer");
+          chartContainer.classList.add("visible");
+
+          if (bodyLanguageChart) {
+            bodyLanguageChart.destroy();
+          }
+
+          const ctx = document
+            .getElementById("bodyLanguageChart")
+            .getContext("2d");
+
+          // Enhanced chart styling
+          Chart.defaults.font.family = "'Outfit', sans-serif";
+          Chart.defaults.color = "rgba(255, 255, 255, 0.7)";
+
+          bodyLanguageChart = new Chart(ctx, {
+            type: "radar",
+            data: {
+              labels: [
+                "Facial Expressions",
+                "Eye Contact",
+                "Posture",
+                "Gestures",
+              ],
+              datasets: [
+                {
+                  label: "Confidence Score",
+                  data: [facialScore, eyeScore, postureScore, gesturesScore],
+                  backgroundColor: "rgba(168, 85, 247, 0.2)",
+                  borderColor: "rgba(168, 85, 247, 0.8)",
+                  borderWidth: 2,
+                  pointBackgroundColor: [
+                    "rgba(168, 85, 247, 1)",
+                    "rgba(59, 130, 246, 1)",
+                    "rgba(236, 72, 153, 1)",
+                    "rgba(20, 184, 166, 1)",
+                  ],
+                  pointBorderColor: "#fff",
+                  pointHoverBackgroundColor: "#fff",
+                  pointHoverBorderColor: "rgba(168, 85, 247, 1)",
+                  pointRadius: 6,
+                  pointHoverRadius: 8,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                r: {
+                  angleLines: {
+                    color: "rgba(255, 255, 255, 0.1)",
+                  },
+                  grid: {
+                    color: "rgba(255, 255, 255, 0.05)",
+                  },
+                  pointLabels: {
+                    font: {
+                      size: 14,
+                      family: "'Space Grotesk', sans-serif",
+                    },
+                    color: "rgba(255, 255, 255, 0.7)",
+                  },
+                  ticks: {
+                    backdropColor: "transparent",
+                    color: "rgba(255, 255, 255, 0.5)",
+                    z: 1,
+                    font: {
+                      size: 10,
+                    },
+                  },
+                  suggestedMin: 0,
+                  suggestedMax: 100,
+                },
+              },
+              plugins: {
+                legend: {
+                  display: false,
+                },
+                tooltip: {
+                  backgroundColor: "rgba(0, 0, 0, 0.7)",
+                  titleFont: {
+                    size: 14,
+                    family: "'Space Grotesk', sans-serif",
+                  },
+                  bodyFont: {
+                    family: "'Outfit', sans-serif",
+                    size: 13,
+                  },
+                  padding: 12,
+                  cornerRadius: 8,
+                  displayColors: false,
+                  callbacks: {
+                    label: function (context) {
+                      return `Score: ${context.raw}%`;
+                    },
+                  },
+                },
+              },
+              animation: {
+                duration: 2000,
+                easing: "easeOutQuart",
+              },
+            },
+          });
+        }, 1200);
+
+        // Update speech analysis chart
+        setTimeout(() => {
+          const speechChartContainer = document.getElementById(
+            "speechChartContainer"
+          );
+          speechChartContainer.classList.add("visible");
+
+          if (speechAnalysisChart) {
+            speechAnalysisChart.destroy();
+          }
+
+          const speechCtx = document
+            .getElementById("speechAnalysisChart")
+            .getContext("2d");
+
+          speechAnalysisChart = new Chart(speechCtx, {
+            type: "bar",
+            data: {
+              labels: [
+                "Pace",
+                "Vocal Variety",
+                "Clarity",
+                "Pauses",
+                "Emphasis",
+                "Pronunciation",
+              ],
+              datasets: [
+                {
+                  label: "Speech Metrics",
+                  data: [
+                    Math.min(100, Math.max(0, (paceValue - 120) / 1.5)),
+                    varietyScore,
+                    clarityScore,
+                    scores.speech_analysis.pauses_score * 100,
+                    scores.speech_analysis.emphasis_score * 100,
+                    scores.speech_analysis.pronunciation_score * 100,
+                  ],
+                  backgroundColor: [
+                    "rgba(34, 197, 94, 0.7)",
+                    "rgba(59, 130, 246, 0.7)",
+                    "rgba(249, 115, 22, 0.7)",
+                    "rgba(168, 85, 247, 0.7)",
+                    "rgba(236, 72, 153, 0.7)",
+                    "rgba(20, 184, 166, 0.7)",
+                  ],
+                  borderColor: [
+                    "rgba(34, 197, 94, 1)",
+                    "rgba(59, 130, 246, 1)",
+                    "rgba(249, 115, 22, 1)",
+                    "rgba(168, 85, 247, 1)",
+                    "rgba(236, 72, 153, 1)",
+                    "rgba(20, 184, 166, 1)",
+                  ],
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 100,
+                  grid: {
+                    color: "rgba(255, 255, 255, 0.05)",
+                  },
+                  ticks: {
+                    color: "rgba(255, 255, 255, 0.7)",
+                  },
+                  title: {
+                    display: true,
+                    text: "Score (%)",
+                    color: "rgba(255, 255, 255, 0.7)",
+                    font: {
+                      family: "'Space Grotesk', sans-serif",
+                      size: 12,
+                    },
+                  },
+                },
+                x: {
+                  grid: {
+                    display: false,
+                  },
+                  ticks: {
+                    color: "rgba(255, 255, 255, 0.7)",
+                    font: {
+                      family: "'Space Grotesk', sans-serif",
+                    },
+                  },
+                },
+              },
+              plugins: {
+                legend: {
+                  display: false,
+                },
+                tooltip: {
+                  backgroundColor: "rgba(0, 0, 0, 0.7)",
+                  titleFont: {
+                    size: 14,
+                    family: "'Space Grotesk', sans-serif",
+                  },
+                  bodyFont: {
+                    family: "'Outfit', sans-serif",
+                    size: 13,
+                  },
+                  padding: 12,
+                  cornerRadius: 8,
+                  displayColors: true,
+                },
+              },
+              animation: {
+                duration: 2000,
+                easing: "easeOutQuart",
+              },
+            },
+          });
+
+          document
+            .getElementById("speechAnalysisChart")
+            .classList.add("visible");
+        }, 1400);
+
+        // Show content boxes with animation
+        setTimeout(() => {
+          document.querySelectorAll(".content-box").forEach((box) => {
+            box.classList.add("visible");
+          });
+        }, 1500);
+
+        // Calculate overall score for badge
+        const overallScore = Math.round(
+          (scores.transcription * 0.2 +
+            scores.content_analysis * 0.3 +
+            scores.body_language.overall * 0.25 +
+            scores.speech_analysis.overall * 0.25) *
+            100
+        );
+
+        // Update overall score badge
+        document.getElementById(
+          "overall-score-badge"
+        ).textContent = `${overallScore}%`;
+
+        // Create performance visualizations
+        createPerformanceVisualizations(scores);
+
+        // Create speech waveform visualization
+        createSpeechWaveform(scores.speech_analysis.waveform_data);
+
+        // Display filler words
+        displayFillerWords(scores.speech_analysis.filler_words);
+
+        // Set speech duration
+        document.getElementById("speech-duration").textContent = formatTime(
+          scores.speech_analysis.duration_seconds
+        );
+      }
+
+      // Function to format time in MM:SS format
+      function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+      }
+
+      // Function to display filler words
+      function displayFillerWords(fillerWords) {
+        const container = document.getElementById("filler-words-list");
+        container.innerHTML = "";
+
+        if (!fillerWords || fillerWords.length === 0) {
+          const emptyMessage = document.createElement("div");
+          emptyMessage.textContent = "No significant filler words detected";
+          emptyMessage.style.color = "var(--text-secondary)";
+          emptyMessage.style.fontStyle = "italic";
+          container.appendChild(emptyMessage);
+          return;
+        }
+
+        fillerWords.forEach((word) => {
+          const fillerWordElement = document.createElement("div");
+          fillerWordElement.className = "filler-word";
+          fillerWordElement.innerHTML = `
+                    ${word.word} <span class="filler-word-count">${word.count}</span>
+                `;
+          container.appendChild(fillerWordElement);
+        });
+      }
+
+      // Function to create speech waveform visualization
+      function createSpeechWaveform(waveformData) {
+        const waveformContainer = document.getElementById("speech-waveform");
+        waveformContainer.innerHTML = "";
+
+        if (!waveformData || waveformData.length === 0) {
+          // Create a default waveform if no data
+          const defaultWaveform = document.createElement("canvas");
+          defaultWaveform.width = waveformContainer.clientWidth;
+          defaultWaveform.height = waveformContainer.clientHeight;
+          waveformContainer.appendChild(defaultWaveform);
+
+          const ctx = defaultWaveform.getContext("2d");
+          ctx.fillStyle = "rgba(34, 197, 94, 0.2)";
+
+          // Draw a simple sine wave
+          ctx.beginPath();
+          const amplitude = defaultWaveform.height / 4;
+          const frequency = 0.05;
+
+          ctx.moveTo(0, defaultWaveform.height / 2);
+
+          for (let x = 0; x < defaultWaveform.width; x++) {
+            const y =
+              defaultWaveform.height / 2 + amplitude * Math.sin(x * frequency);
+            ctx.lineTo(x, y);
+          }
+
+          ctx.lineTo(defaultWaveform.width, defaultWaveform.height / 2);
+          ctx.closePath();
+          ctx.fill();
+
+          return;
+        }
+
+        // Create canvas for waveform
+        const canvas = document.createElement("canvas");
+        canvas.width = waveformContainer.clientWidth;
+        canvas.height = waveformContainer.clientHeight;
+        waveformContainer.appendChild(canvas);
+
+        const ctx = canvas.getContext("2d");
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Normalize waveform data to fit canvas
+        const normalizedData = [];
+        const step = Math.ceil(waveformData.length / width);
+
+        for (let i = 0; i < width; i++) {
+          const dataIndex = i * step;
+          if (dataIndex < waveformData.length) {
+            // Normalize to 0-1 range
+            normalizedData.push(waveformData[dataIndex]);
+          }
+        }
+
+        // Draw waveform
+        ctx.fillStyle = "rgba(34, 197, 94, 0.2)";
+        ctx.strokeStyle = "rgba(34, 197, 94, 0.8)";
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.moveTo(0, height / 2);
+
+        for (let i = 0; i < normalizedData.length; i++) {
+          const x = i;
+          const y = height / 2 - (normalizedData[i] * height) / 2;
+          ctx.lineTo(x, y);
+        }
+
+        // Complete the path back to the bottom
+        ctx.lineTo(normalizedData.length - 1, height / 2);
+        ctx.lineTo(0, height / 2);
+        ctx.closePath();
+
+        // Fill and stroke
+        ctx.fill();
+        ctx.stroke();
+
+        // Add emphasis points (pauses, etc.)
+        if (
+          waveformData.emphasis_points &&
+          waveformData.emphasis_points.length > 0
+        ) {
+          waveformData.emphasis_points.forEach((point) => {
+            const x = (point.position / waveformData.length) * width;
+
+            ctx.beginPath();
+            ctx.arc(x, height / 2, 5, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(236, 72, 153, 0.8)";
+            ctx.fill();
+          });
+        }
+      }
+
+      // Function to create performance visualizations
+      function createPerformanceVisualizations(scores) {
+        // Calculate scores
+        const transcriptionScore = Math.round(scores.transcription * 100);
+        const contentScore = Math.round(scores.content_analysis * 100);
+        const bodyScore = Math.round(scores.body_language.overall * 100);
+        const speechScore = Math.round(scores.speech_analysis.overall * 100);
+
+        const overallScore = Math.round(
+          (scores.transcription * 0.2 +
+            scores.content_analysis * 0.3 +
+            scores.body_language.overall * 0.25 +
+            scores.speech_analysis.overall * 0.25) *
+            100
+        );
+
+        // 1. Create Gauge Chart
+        setTimeout(() => {
+          if (gaugeChart) {
+            gaugeChart.destroy();
+          }
+
+          const gaugeCtx = document.getElementById("gauge-chart");
+          gaugeChart = new Chart(gaugeCtx, {
+            type: "doughnut",
+            data: {
+              datasets: [
+                {
+                  data: [overallScore, 100 - overallScore],
+                  backgroundColor: [
+                    createGradient(gaugeCtx, overallScore),
+                    "rgba(255, 255, 255, 0.05)",
+                  ],
+                  borderWidth: 0,
+                  circumference: 180,
+                  rotation: 270,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: "75%",
+              plugins: {
+                legend: {
+                  display: false,
+                },
+                tooltip: {
+                  enabled: false,
+                },
+              },
+              animation: {
+                duration: 2000,
+                easing: "easeOutQuart",
+              },
+            },
+            plugins: [
+              {
+                id: "gaugeText",
+                afterDraw: (chart) => {
+                  const { ctx, width, height } = chart;
+                  ctx.save();
+                  ctx.textAlign = "center";
+                  ctx.textBaseline = "middle";
+                  ctx.font = 'bold 2rem "Space Grotesk"';
+                  ctx.fillStyle = "#f8fafc";
+                  ctx.fillText(`${overallScore}%`, width / 2, height - 30);
+                  ctx.font = '1rem "Outfit"';
+                  ctx.fillStyle = "#cbd5e1";
+                  ctx.fillText("Overall Score", width / 2, height - 10);
+                  ctx.restore();
+                },
+              },
+            ],
+          });
+
+          document.getElementById("gauge-chart").classList.add("visible");
+        }, 1000);
+
+        // 2. Create Radar Chart for detailed performance
+        setTimeout(() => {
+          if (radarChart) {
+            radarChart.destroy();
+          }
+
+          const radarCtx = document.getElementById("radar-chart");
+          radarChart = new Chart(radarCtx, {
+            type: "radar",
+            data: {
+              labels: [
+                "Transcription",
+                "Content",
+                "Body Language",
+                "Speech",
+                "Clarity",
+                "Engagement",
+              ],
+              datasets: [
+                {
+                  label: "Performance",
+                  data: [
+                    transcriptionScore,
+                    contentScore,
+                    bodyScore,
+                    speechScore,
+                    scores.speech_analysis.clarity * 100,
+                    (contentScore + speechScore) / 2,
+                  ],
+                  backgroundColor: "rgba(168, 85, 247, 0.2)",
+                  borderColor: "rgba(168, 85, 247, 0.8)",
+                  borderWidth: 2,
+                  pointBackgroundColor: "rgba(168, 85, 247, 1)",
+                  pointBorderColor: "#fff",
+                  pointHoverBackgroundColor: "#fff",
+                  pointHoverBorderColor: "rgba(168, 85, 247, 1)",
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                r: {
+                  angleLines: {
+                    color: "rgba(255, 255, 255, 0.1)",
+                  },
+                  grid: {
+                    color: "rgba(255, 255, 255, 0.05)",
+                  },
+                  pointLabels: {
+                    font: {
+                      size: 12,
+                      family: "'Space Grotesk', sans-serif",
+                    },
+                    color: "rgba(255, 255, 255, 0.7)",
+                  },
+                  ticks: {
+                    backdropColor: "transparent",
+                    color: "rgba(255, 255, 255, 0.5)",
+                    z: 1,
+                    font: {
+                      size: 10,
+                    },
+                  },
+                  suggestedMin: 0,
+                  suggestedMax: 100,
+                },
+              },
+              plugins: {
+                legend: {
+                  display: false,
+                },
+                tooltip: {
+                  backgroundColor: "rgba(0, 0, 0, 0.7)",
+                  titleFont: {
+                    size: 14,
+                    family: "'Space Grotesk', sans-serif",
+                  },
+                  bodyFont: {
+                    family: "'Outfit', sans-serif",
+                    size: 13,
+                  },
+                  padding: 12,
+                  cornerRadius: 8,
+                  displayColors: false,
+                },
+              },
+              animation: {
+                duration: 2000,
+                easing: "easeOutQuart",
+              },
+            },
+          });
+
+          document.getElementById("radar-chart").classList.add("visible");
+        }, 1200);
+
+        // 3. Create Priority Chart (horizontal bar chart)
+        setTimeout(() => {
+          if (priorityChart) {
+            priorityChart.destroy();
+          }
+
+          // Sort scores to find areas needing most improvement
+          const areas = [
+            { name: "Transcription", score: transcriptionScore },
+            { name: "Content Quality", score: contentScore },
+            { name: "Body Language", score: bodyScore },
+            { name: "Speech Delivery", score: speechScore },
+            {
+              name: "Vocal Variety",
+              score: scores.speech_analysis.vocal_variety * 100,
+            },
+            { name: "Clarity", score: scores.speech_analysis.clarity * 100 },
+          ];
+
+          // Sort by score ascending (lowest scores first - need most improvement)
+          areas.sort((a, b) => a.score - b.score);
+
+          // Take only the 4 lowest scores
+          const priorityAreas = areas.slice(0, 4);
+
+          const priorityCtx = document.getElementById("priority-chart");
+          priorityChart = new Chart(priorityCtx, {
+            type: "bar",
+            data: {
+              labels: priorityAreas.map((area) => area.name),
+              datasets: [
+                {
+                  label: "Priority Score",
+                  data: priorityAreas.map((area) => 100 - area.score), // Invert scores for priority
+                  backgroundColor: [
+                    "rgba(239, 68, 68, 0.7)", // Red for highest priority
+                    "rgba(249, 115, 22, 0.7)", // Orange
+                    "rgba(234, 179, 8, 0.7)", // Yellow
+                    "rgba(59, 130, 246, 0.7)", // Blue for lowest priority
+                  ],
+                  borderColor: [
+                    "rgba(239, 68, 68, 1)",
+                    "rgba(249, 115, 22, 1)",
+                    "rgba(234, 179, 8, 1)",
+                    "rgba(59, 130, 246, 1)",
+                  ],
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              indexAxis: "y",
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  max: 100,
+                  grid: {
+                    color: "rgba(255, 255, 255, 0.05)",
+                  },
+                  ticks: {
+                    color: "rgba(255, 255, 255, 0.7)",
+                  },
+                  title: {
+                    display: true,
+                    text: "Priority Score",
+                    color: "rgba(255, 255, 255, 0.7)",
+                    font: {
+                      family: "'Space Grotesk', sans-serif",
+                      size: 12,
+                    },
+                  },
+                },
+                y: {
+                  grid: {
+                    display: false,
+                  },
+                  ticks: {
+                    color: "rgba(255, 255, 255, 0.7)",
+                    font: {
+                      family: "'Space Grotesk', sans-serif",
+                    },
+                  },
+                },
+              },
+              plugins: {
+                legend: {
+                  display: false,
+                },
+                tooltip: {
+                  backgroundColor: "rgba(0, 0, 0, 0.7)",
+                  titleFont: {
+                    size: 14,
+                    family: "'Space Grotesk', sans-serif",
+                  },
+                  bodyFont: {
+                    family: "'Outfit', sans-serif",
+                    size: 13,
+                  },
+                  padding: 12,
+                  cornerRadius: 8,
+                  displayColors: false,
+                  callbacks: {
+                    label: function (context) {
+                      return `Priority: ${context.raw}%`;
+                    },
+                  },
+                },
+              },
+              animation: {
+                duration: 2000,
+                easing: "easeOutQuart",
+              },
+            },
+          });
+
+          document.getElementById("priority-chart").classList.add("visible");
+        }, 1400);
+
+        // 4. Create Comparison Chart
+        setTimeout(() => {
+          if (comparisonChart) {
+            comparisonChart.destroy();
+          }
+
+          // Generate comparison data
+          const comparisonData = {
+            labels: ["Speech", "Content", "Body Language", "Overall"],
+            datasets: [
+              {
+                label: "Your Score",
+                data: [speechScore, contentScore, bodyScore, overallScore],
+                backgroundColor: "rgba(168, 85, 247, 0.7)",
+                borderColor: "rgba(168, 85, 247, 1)",
+                borderWidth: 1,
+              },
+              {
+                label: "Average Presenter",
+                data: [70, 65, 60, 65],
+                backgroundColor: "rgba(255, 255, 255, 0.2)",
+                borderColor: "rgba(255, 255, 255, 0.3)",
+                borderWidth: 1,
+              },
+              {
+                label: "Expert Presenter",
+                data: [90, 85, 90, 88],
+                backgroundColor: "rgba(59, 130, 246, 0.7)",
+                borderColor: "rgba(59, 130, 246, 1)",
+                borderWidth: 1,
+              },
+            ],
+          };
+
+          const comparisonCtx = document.getElementById("comparison-chart");
+          comparisonChart = new Chart(comparisonCtx, {
+            type: "bar",
+            data: comparisonData,
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 100,
+                  grid: {
+                    color: "rgba(255, 255, 255, 0.05)",
+                  },
+                  ticks: {
+                    color: "rgba(255, 255, 255, 0.7)",
+                  },
+                  title: {
+                    display: true,
+                    text: "Score (%)",
+                    color: "rgba(255, 255, 255, 0.7)",
+                    font: {
+                      family: "'Space Grotesk', sans-serif",
+                      size: 12,
+                    },
+                  },
+                },
+                x: {
+                  grid: {
+                    display: false,
+                  },
+                  ticks: {
+                    color: "rgba(255, 255, 255, 0.7)",
+                    font: {
+                      family: "'Space Grotesk', sans-serif",
+                    },
+                  },
+                },
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "top",
+                  labels: {
+                    color: "rgba(255, 255, 255, 0.7)",
+                    font: {
+                      family: "'Space Grotesk', sans-serif",
+                    },
+                    boxWidth: 15,
+                    padding: 15,
+                  },
+                },
+                tooltip: {
+                  backgroundColor: "rgba(0, 0, 0, 0.7)",
+                  titleFont: {
+                    size: 14,
+                    family: "'Space Grotesk', sans-serif",
+                  },
+                  bodyFont: {
+                    family: "'Outfit', sans-serif",
+                    size: 13,
+                  },
+                  padding: 12,
+                  cornerRadius: 8,
+                  displayColors: true,
+                },
+              },
+              animation: {
+                duration: 2000,
+                easing: "easeOutQuart",
+              },
+            },
+          });
+
+          document.getElementById("comparison-chart").classList.add("visible");
+        }, 1600);
+
+        // Animate visualization items
+        setTimeout(() => {
+          document
+            .querySelectorAll(".visualization-item")
+            .forEach((item, index) => {
+              setTimeout(() => {
+                item.classList.add("visible");
+              }, index * 200);
+            });
+        }, 1000);
+      }
+
+      // Helper function to create gradient for gauge chart
+      function createGradient(ctx, score) {
+        const gradient = ctx.createLinearGradient(0, 0, 200, 0);
+
+        if (score < 50) {
+          // Red to orange gradient for low scores
+          gradient.addColorStop(0, "rgba(239, 68, 68, 0.8)");
+          gradient.addColorStop(1, "rgba(249, 115, 22, 0.8)");
+        } else if (score < 75) {
+          // Orange to yellow gradient for medium scores
+          gradient.addColorStop(0, "rgba(249, 115, 22, 0.8)");
+          gradient.addColorStop(1, "rgba(234, 179, 8, 0.8)");
+        } else {
+          // Green to blue gradient for high scores
+          gradient.addColorStop(0, "rgba(34, 197, 94, 0.8)");
+          gradient.addColorStop(1, "rgba(59, 130, 246, 0.8)");
+        }
+
+        return gradient;
+      }
+
+      // Function to generate improvement items
+      function generateImprovements(data) {
+        const container = document.getElementById("improvements-container");
+        container.innerHTML = "";
+
+        // If we have improvements data from the API
+        if (data && data.improvements && Array.isArray(data.improvements)) {
+          data.improvements.forEach((item) => {
+            const improvementItem = document.createElement("div");
+            improvementItem.className = "improvement-item";
+
+            const priorityClass = `priority-${item.importance || "medium"}`;
+
+            improvementItem.innerHTML = `
+                        <div class="improvement-header">
+                            <div class="improvement-title">${
+                              item.area || "Improvement Area"
+                            }</div>
+                            <div class="improvement-priority ${priorityClass}">${
+              item.importance || "Medium"
+            }</div>
+                        </div>
+                        <div class="improvement-why">${
+                          item.why ||
+                          "This area needs improvement for better presentation."
+                        }</div>
+                        <div class="improvement-how">${
+                          item.how_to_improve ||
+                          "Practice and seek feedback to improve this aspect."
+                        }</div>
+                    `;
+
+            container.appendChild(improvementItem);
+          });
+        } else {
+          // Generate default improvements if none provided
+          const defaultImprovements = [
+            {
+              area: "Content Structure",
+              importance: "high",
+              why: "Well-structured content is easier for the audience to follow and understand.",
+              how_to_improve:
+                "Use a clear introduction, body, and conclusion. Create logical transitions between topics.",
+            },
+            {
+              area: "Vocal Delivery",
+              importance: "medium",
+              why: "Monotone delivery can cause audience disengagement.",
+              how_to_improve:
+                "Practice varying your pitch, pace, and volume for emphasis on key points.",
+            },
+            {
+              area: "Eye Contact",
+              importance: "medium",
+              why: "Consistent eye contact builds trust and connection with your audience.",
+              how_to_improve:
+                "Practice looking at different sections of your audience. For virtual presentations, look directly at the camera.",
+            },
+            {
+              area: "Gestures and Movement",
+              importance: "low",
+              why: "Natural gestures enhance your message and keep the audience engaged.",
+              how_to_improve:
+                "Use purposeful hand gestures to emphasize points. Avoid fidgeting or repetitive movements.",
+            },
+          ];
+
+          defaultImprovements.forEach((item) => {
+            const improvementItem = document.createElement("div");
+            improvementItem.className = "improvement-item";
+
+            const priorityClass = `priority-${item.importance}`;
+
+            improvementItem.innerHTML = `
+                        <div class="improvement-header">
+                            <div class="improvement-title">${item.area}</div>
+                            <div class="improvement-priority ${priorityClass}">${item.importance}</div>
+                        </div>
+                        <div class="improvement-why">${item.why}</div>
+                        <div class="improvement-how">${item.how_to_improve}</div>
+                    `;
+
+            container.appendChild(improvementItem);
+          });
+        }
+
+        // Add a summary to the improvements analysis box
+        const analysisBox = document.getElementById("improvementsAnalysis");
+        analysisBox.innerHTML = `
+                <p>Based on the analysis of your presentation, we've identified several areas for improvement. 
+                Focus on the high-priority items first, as they will have the most significant impact on your overall presentation effectiveness.</p>
+                <p>Remember that improvement is a continuous process. Regular practice and feedback will help you develop these skills over time.</p>
+            `;
+      }
+
+      analyzeBtn.addEventListener("click", async () => {
+        if (!fileInput.files.length) {
+          showError("Please select a video file first");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("video", fileInput.files[0]);
+
+        // Show loading state
+        document.querySelector(".loading").style.display = "block";
+        document.querySelector(".upload-card").style.display = "none";
+
+        try {
+          const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Hide loading
+            document.querySelector(".loading").style.display = "none";
+
+            // Show results
+            document.querySelector(".result-section").style.display = "block";
+
+            // Update content
+            document.getElementById("transcription").textContent =
+              data.transcription;
+            document.getElementById("enhancedTranscription").textContent =
+              data.enhanced_transcription;
+            document.getElementById("analysis").textContent = data.analysis;
+            document.getElementById("bodyAnalysis").textContent =
+              data.body_analysis;
+            document.getElementById("speechAnalysis").textContent =
+              data.speech_analysis;
+
+            // Update all suggestions content
+            document.getElementById("allSuggestionsContent").textContent =
+              data.all_suggestions_summary;
+
+            // Update confidence scores
+            updateConfidenceBars(data.confidence_scores);
+
+            // Generate improvements
+            generateImprovements(data);
+
+            // Set up audio players
+            if (data.tts_url) {
+              const enhancedAudio = document.getElementById(
+                "enhancedTranscriptionAudio"
+              );
+              enhancedAudio.src = data.tts_url;
+
+              // Enhanced transcription audio controls
+              const playEnhancedBtn = document.getElementById("playEnhancedBtn");
+              const pauseEnhancedBtn = document.getElementById(
+                "pauseEnhancedBtn"
+              );
+              const enhancedAudioStatus = document.getElementById(
+                "enhancedAudioStatus"
+              );
+
+              playEnhancedBtn.addEventListener("click", () => {
+                enhancedAudio.play();
+                playEnhancedBtn.style.display = "none";
+                pauseEnhancedBtn.style.display = "inline-flex";
+                enhancedAudioStatus.textContent = "Playing...";
+              });
+
+              pauseEnhancedBtn.addEventListener("click", () => {
+                enhancedAudio.pause();
+                pauseEnhancedBtn.style.display = "none";
+                playEnhancedBtn.style.display = "inline-flex";
+                enhancedAudioStatus.textContent = "Paused";
+              });
+
+              enhancedAudio.addEventListener("ended", () => {
+                pauseEnhancedBtn.style.display = "none";
+                playEnhancedBtn.style.display = "inline-flex";
+                enhancedAudioStatus.textContent = "Finished";
+              });
+            }
+
+            // Set up all suggestions audio
+            if (data.all_suggestions_tts_url) {
+              suggestionsAudio = document.getElementById("suggestionsAudio");
+              suggestionsAudio.src = data.all_suggestions_tts_url;
+
+              suggestionsAudio.addEventListener("ended", () => {
+                pauseBtn.style.display = "none";
+                playBtn.style.display = "inline-flex";
+                audioStatus.textContent = "Finished";
+              });
+            }
+
+            // Scroll to results
+            document
+              .querySelector(".result-section")
+              .scrollIntoView({ behavior: "smooth" });
+          } else {
+            throw new Error(data.error || "Analysis failed");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          document.querySelector(".loading").style.display = "none";
+          document.querySelector(".upload-card").style.display = "block";
+          showError(
+            error.message || "An error occurred while analyzing the video"
+          );
+        }
+      });
+
+      // Initialize GSAP animations
+      gsap.registerPlugin();
+
+      // Animate elements on page load
+      window.addEventListener("load", () => {
+        gsap.from(".glow-orb", {
+          duration: 2,
+          scale: 0,
+          opacity: 0,
+          stagger: 0.3,
+          ease: "power2.out",
+        });
+
+        gsap.from(".header h1", {
+          duration: 1.5,
+          y: 50,
+          opacity: 0,
+          ease: "power3.out",
+          delay: 0.5,
+        });
+
+        gsap.from(".header p", {
+          duration: 1.2,
+          y: 30,
+          opacity: 0,
+          ease: "power3.out",
+          delay: 0.8,
+        });
+
+        gsap.from(".upload-card", {
+          duration: 1.5,
+          y: 100,
+          opacity: 0,
+          ease: "power3.out",
+          delay: 1,
+        });
+      });
+    </script>
+  </body>
+</html>
