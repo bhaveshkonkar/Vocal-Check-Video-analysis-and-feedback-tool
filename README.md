@@ -1,14 +1,44 @@
-# Video Analysis Tool
+# Vocal-Check-Video-analysis-and-feedback-tool
+Vocal Check is an intelligent, real-time voice and video analysis tool designed to help users improve their presentation skills. It provides instant feedback on speech pace, pauses, filler words, body language, eye contact, and more.
 
-This application provides a web interface for analyzing videos, including transcription, content analysis, and body language analysis.
 
-## Features
 
-- Video upload and processing
-- Automatic transcription using Whisper
-- Content analysis using Google's Gemini AI
-- Body language analysis
-- Modern web interface
+🚀 Features
+
+🎤 Voice Analysis:
+feedback on pace, pauses, pronunciation, and filler word usage.
+
+🎥 Video Analysis:
+Posture, eye contact, and gesture tracking using advanced computer vision.
+
+🧠 AI-Powered Insights:
+Smart suggestions for improving presentation delivery based on multi-modal data.
+
+📊 Detailed Feedback Reports:
+Summarized visual feedback with actionable tips for each session.
+
+
+
+
+🔧 Tech Stack
+JavaScript (Frontend)
+
+Python (Backend)
+
+Gemini API - for analyzing
+
+Speech-to-Text API - Whisper
+
+
+
+
+🌟 Use Cases
+Students preparing for presentations or viva.
+
+Professionals refining public speaking skills.
+
+Trainers providing structured feedback.
+
 
 ## Setup
 
