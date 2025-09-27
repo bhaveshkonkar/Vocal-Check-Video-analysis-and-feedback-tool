@@ -42,7 +42,7 @@ Trainers providing structured feedback.
 
 ## Setup
 
-1. Install Python 3.8 or higher
+1. Install Python 3.8 to 3.9.1
 2. Install the required dependencies:
    ```bash
    pip install -r requirements.txt
